@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+enum Category {
+  RIZ
+  SAUCES
+  VIANDES
+  BOISSONS
+  EPICES
+}
+
+enum OrderStatus {
+  RECEIVED
+  PREPARING
+  READY
+  DELIVERING
+  DELIVERED
+  CANCELLED
+}
+
+enum OrderType {
+  TRAITEUR
+  LUNCH_AFTER_CHURCH
+}
+
+enum DeliveryMethod {
+  DELIVERY
+  PICKUP
+}
+
+enum PaymentMethod {
+  CARD
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  phone     String?
+  password  String?
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses Address[]
+  orders    Order[]
+}
+
+model Address {
+  id        String  @id @default(cuid())
+  userId    String
+  label     String?
+  street    String
+  city      String
+  state     String?
+  zipCode   String?
+  country   String  @default("Haiti")
+  isDefault Boolean @default(false)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  nameCreole  String
+  description String
+  price       Float
+  image       String?
+  category    Category
+  available   Boolean  @default(true)
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sizes           Size[]
+  orderItems      OrderItem[]
+  weeklyMenuItems WeeklyMenuItem[]
+}
+
+model Size {
+  id              String @id @default(cuid())
+  label           String
+  labelCreole     String
+  servings        String
+  priceMultiplier Float  @default(1.0)
+  productId       String
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+}
+
+model Order {
+  id              String         @id @default(cuid())
+  userId          String?
+  guestEmail      String?
+  guestPhone      String?
+  guestName       String?
+  status          OrderStatus    @default(RECEIVED)
+  type            OrderType      @default(TRAITEUR)
+  deliveryMethod  DeliveryMethod @default(DELIVERY)
+  deliveryAddress String?
+  addressId       String?
+  deliverySlot    String?
+  paymentMethod   PaymentMethod  @default(CARD)
+  paymentStatus   PaymentStatus  @default(PENDING)
+  stripePaymentId String?
+  promoCode       String?
+  subtotal        Float
+  deliveryFee     Float          @default(0)
+  discount        Float          @default(0)
+  total           Float
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user    User?       @relation(fields: [userId], references: [id])
+  address Address?    @relation(fields: [addressId], references: [id])
+  items   OrderItem[]
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  productId      String
+  sizeId         String?
+  quantity       Int
+  customizations Json?
+  unitPrice      Float
+  totalPrice     Float
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+  size    Size?   @relation(fields: [sizeId], references: [id])
+}
+
+model WeeklyMenu {
+  id            String   @id @default(cuid())
+  weekStartDate DateTime
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  items WeeklyMenuItem[]
+}
+
+model WeeklyMenuItem {
+  id           String  @id @default(cuid())
+  weeklyMenuId String
+  productId    String
+  maxQuantity  Int?
+  soldCount    Int     @default(0)
+  available    Boolean @default(true)
+
+  weeklyMenu WeeklyMenu @relation(fields: [weeklyMenuId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id])
+}
+
+model PromoCode {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  discountType  DiscountType
+  discountValue Float
+  validUntil    DateTime?
+  maxUses       Int?
+  currentUses   Int          @default(0)
+  active        Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+}
+
+model SiteConfig {
+  id                  String @id @default(cuid())
+  minOrderAmount      Float  @default(10)
+  deliveryFee         Float  @default(5)
+  freeDeliveryMinimum Float  @default(50)
+  deliveryRadiusKm    Float  @default(15)
+  sundayDeadline      String @default("Saturday 20:00")
+  pickupAddress       String @default("")
+  pickupHours         String @default("")
+}

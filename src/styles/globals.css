@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Caveat:wght@400..700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-blue: #00209F;
+    --brand-red: #D21034;
+    --brand-gold: #FCD116;
+    --brand-cream: #FFF8F0;
+    --brand-brown: #5C3D2E;
+    --brand-green: #2D6A4F;
+  }
+
+  body {
+    @apply bg-brand-cream text-brand-brown font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-blue text-white px-6 py-3 rounded-xl font-semibold
+           hover:bg-blue-800 transition-all duration-200 active:scale-95
+           focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2;
+  }
+
+  .btn-accent {
+    @apply bg-brand-red text-white px-6 py-3 rounded-xl font-semibold
+           hover:bg-red-700 transition-all duration-200 active:scale-95
+           focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-2;
+  }
+
+  .btn-gold {
+    @apply bg-brand-gold text-brand-brown px-6 py-3 rounded-xl font-semibold
+           hover:bg-yellow-400 transition-all duration-200 active:scale-95
+           focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2;
+  }
+
+  .btn-outline {
+    @apply border-2 border-brand-blue text-brand-blue px-6 py-3 rounded-xl font-semibold
+           hover:bg-brand-blue hover:text-white transition-all duration-200 active:scale-95;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-md overflow-hidden
+           transition-all duration-200 hover:shadow-lg;
+  }
+
+  .section-title {
+    @apply font-display text-3xl md:text-4xl font-bold text-brand-brown;
+  }
+
+  .section-subtitle {
+    @apply font-accent text-xl text-brand-brown/70;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--brand-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--brand-brown);
+  border-radius: 4px;
+}
+
+/* Cart badge animation */
+@keyframes cart-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.cart-badge-animate {
+  animation: cart-bounce 0.3s ease-in-out;
+}
