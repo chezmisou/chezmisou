@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          blue: "#1E90FF",
+          blue: "#6B5731",
           red: "#D21034",
           gold: "#FCD116",
           cream: "#FFF8F0",
@@ -18,17 +18,17 @@ const config: Config = {
           green: "#2D6A4F",
         },
         blue: {
-          50: "#EFF8FF",
-          100: "#DBEFFF",
-          200: "#BFE2FF",
-          300: "#93D0FF",
-          400: "#59B5FF",
-          500: "#1E90FF",
-          600: "#1A7AE0",
-          700: "#1562B8",
-          800: "#114F94",
-          900: "#0E3F77",
-          950: "#092850",
+          50: "#FAF7F2",
+          100: "#F0EBDF",
+          200: "#E0D5BC",
+          300: "#CABB94",
+          400: "#B09A6A",
+          500: "#6B5731",
+          600: "#5C4B2A",
+          700: "#4D3E23",
+          800: "#3E321C",
+          900: "#2F2615",
+          950: "#1F190E",
         },
       },
       fontFamily: {
