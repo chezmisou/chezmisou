@@ -281,3 +281,37 @@ model LacConfig {
   reminderEmailsEnabled Boolean @default(true)
   reminderDaysBefore    Int     @default(3)
 }
+
+// ==================== Épicerie Fine Models ====================
+
+enum EpicerieCategory {
+  EPIS
+  PIMENT
+  KREMAS
+}
+
+model EpicerieCategoryInfo {
+  id          String           @id @default(cuid())
+  key         EpicerieCategory @unique
+  labelFr     String
+  labelCr     String
+  accentColor String
+
+  products EpicerieProduct[]
+}
+
+model EpicerieProduct {
+  id          String           @id @default(cuid())
+  nameFr      String
+  nameCr      String
+  category    EpicerieCategory
+  size        String
+  price       Float
+  defaultPrice Float
+  image       String           @default("🫙")
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  categoryInfo EpicerieCategoryInfo @relation(fields: [category], references: [key])
+}

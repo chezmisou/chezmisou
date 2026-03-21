@@ -28,6 +28,9 @@ export default function Header() {
           <Link href="/lunch-after-church" className="hover:text-brand-gold transition-colors">
             Lunch After Church
           </Link>
+          <Link href="/epicerie-fine" className="hover:text-brand-gold transition-colors">
+            Épicerie Fine
+          </Link>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -76,6 +79,14 @@ export default function Header() {
             >
               <span className="text-lg">⛪</span>
               Lunch After Church
+            </Link>
+            <Link
+              href="/epicerie-fine"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 py-3 px-3 rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <span className="text-lg">🫙</span>
+              Épicerie Fine
             </Link>
             <Link
               href="/cart"
