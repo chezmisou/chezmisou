@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -19,9 +19,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 
-// Auth context so child pages can access the password for API calls
-const AuthContext = createContext<{ password: string }>({ password: '' });
-export function useAdminAuth() { return useContext(AuthContext); }
+import { AuthContext, useAdminAuth } from '@/lib/admin-auth';
 
 const ADMIN_PASSWORD = 'churchlunch2024';
 
