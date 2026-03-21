@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 
 interface MenuItem {
   nom: string;
@@ -323,8 +324,11 @@ export default function ClientPage() {
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-4 text-sm text-[#3B2314]/40">
-        Lunch After Church &copy; {new Date().getFullYear()}
+      <footer className="text-center py-4 text-sm text-[#3B2314]/40 space-y-1">
+        <p>Lunch After Church &copy; {new Date().getFullYear()}</p>
+        <Link href="/admin" className="text-[#D4A017] hover:underline">
+          Administration
+        </Link>
       </footer>
     </div>
   );
