@@ -277,6 +277,50 @@ async function main() {
   });
   console.log("  ✅ LacConfig created");
 
+  // ─── Épicerie Fine — Categories ────────────────────────────────────
+  const epicerieCategories = [
+    { key: "EPIS" as const, labelFr: "Épices", labelCr: "Epis", accentColor: "#D4A017" },
+    { key: "PIMENT" as const, labelFr: "Piments", labelCr: "Piman", accentColor: "#C0392B" },
+    { key: "KREMAS" as const, labelFr: "Krémas", labelCr: "Krémas", accentColor: "#8E6F47" },
+  ];
+
+  for (const cat of epicerieCategories) {
+    await prisma.epicerieCategoryInfo.upsert({
+      where: { key: cat.key },
+      update: { labelFr: cat.labelFr, labelCr: cat.labelCr, accentColor: cat.accentColor },
+      create: { key: cat.key, labelFr: cat.labelFr, labelCr: cat.labelCr, accentColor: cat.accentColor },
+    });
+    console.log(`  ✅ EpicerieCategory: ${cat.labelFr}`);
+  }
+
+  // ─── Épicerie Fine — Products ─────────────────────────────────────
+  const epicerieProducts = [
+    { nameFr: "Pot d'Épice — Petit", nameCr: "Ti Pot Epis", category: "EPIS" as const, size: "250ml", price: 8.50, image: "🫙" },
+    { nameFr: "Pot d'Épice — Moyen", nameCr: "Pot Epis Mwayen", category: "EPIS" as const, size: "500ml", price: 14.00, image: "🫙" },
+    { nameFr: "Pot d'Épice — Grand", nameCr: "Gwo Pot Epis", category: "EPIS" as const, size: "1L", price: 22.00, image: "🫙" },
+    { nameFr: "Pot de Piment — Petit", nameCr: "Ti Pot Piman", category: "PIMENT" as const, size: "150ml", price: 6.50, image: "🌶️" },
+    { nameFr: "Pot de Piment — Moyen", nameCr: "Pot Piman Mwayen", category: "PIMENT" as const, size: "350ml", price: 11.00, image: "🌶️" },
+    { nameFr: "Pot de Piment — Grand", nameCr: "Gwo Pot Piman", category: "PIMENT" as const, size: "500ml", price: 16.50, image: "🌶️" },
+    { nameFr: "Kremas — Bouteille", nameCr: "Krémas an Boutèy", category: "KREMAS" as const, size: "750ml", price: 18.00, image: "🥥" },
+  ];
+
+  for (const prod of epicerieProducts) {
+    const existing = await prisma.epicerieProduct.findFirst({
+      where: { nameCr: prod.nameCr, size: prod.size },
+    });
+    if (!existing) {
+      await prisma.epicerieProduct.create({
+        data: { ...prod, defaultPrice: prod.price },
+      });
+    } else {
+      await prisma.epicerieProduct.update({
+        where: { id: existing.id },
+        data: { nameFr: prod.nameFr, nameCr: prod.nameCr, image: prod.image },
+      });
+    }
+    console.log(`  ✅ EpicerieProduct: ${prod.nameCr} (${prod.size})`);
+  }
+
   console.log("\n🌱 Seeding complete!");
 }
 
