@@ -23,16 +23,17 @@ enum Category {
 }
 
 enum OrderStatus {
-  RECEIVED
+  PENDING
+  CONFIRMED
   PREPARING
   READY
-  DELIVERING
   DELIVERED
   CANCELLED
 }
 
 enum OrderType {
   TRAITEUR
+  EPICERIE_FINE
   LUNCH_AFTER_CHURCH
 }
 
@@ -121,16 +122,19 @@ model Size {
 
 model Order {
   id              String         @id @default(cuid())
+  orderNumber     String         @unique @default("")
   userId          String?
   guestEmail      String?
   guestPhone      String?
   guestName       String?
-  status          OrderStatus    @default(RECEIVED)
+  status          OrderStatus    @default(PENDING)
   type            OrderType      @default(TRAITEUR)
   deliveryMethod  DeliveryMethod @default(DELIVERY)
   deliveryAddress String?
   addressId       String?
   deliverySlot    String?
+  deliveryDate    DateTime?
+  guestCount      Int?
   paymentMethod   PaymentMethod  @default(CARD)
   paymentStatus   PaymentStatus  @default(PENDING)
   stripePaymentId String?
@@ -143,9 +147,20 @@ model Order {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
-  user    User?       @relation(fields: [userId], references: [id])
-  address Address?    @relation(fields: [addressId], references: [id])
-  items   OrderItem[]
+  user          User?                @relation(fields: [userId], references: [id])
+  address       Address?             @relation(fields: [addressId], references: [id])
+  items         OrderItem[]
+  statusHistory OrderStatusHistory[]
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  changedAt DateTime    @default(now())
+  changedBy String?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model OrderItem {
