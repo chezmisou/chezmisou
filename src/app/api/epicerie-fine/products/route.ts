@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/epicerie-fine/products — List all products (public: only active, admin: all)
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

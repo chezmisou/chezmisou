@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 interface Product {
   id: string;
@@ -208,8 +208,6 @@ export default function AdminEpicerieFinePage() {
 
   return (
     <div className="min-h-screen" style={{ background: "#FAF6F0" }}>
-      <Toaster position="top-right" />
-
       {/* Header */}
       <header className="sticky top-0 z-50 shadow-md" style={{ background: "#2C1810" }}>
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
