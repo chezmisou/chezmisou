@@ -15,6 +15,9 @@ import {
   Sun,
   ChevronLeft,
   Home,
+  Package,
+  UtensilsCrossed,
+  Store,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
@@ -27,6 +30,9 @@ const ADMIN_PASSWORD = 'churchlunch2024';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { href: '/admin/commandes', label: 'Commandes', icon: Package, exact: true },
+  { href: '/admin/commandes/traiteur', label: 'Traiteur', icon: UtensilsCrossed, indent: true },
+  { href: '/admin/commandes/epicerie', label: 'Épicerie fine', icon: Store, indent: true },
   { href: '/admin/eglises', label: 'Églises', icon: Church },
   { href: '/admin/planning', label: 'Planification', icon: CalendarDays },
   { href: '/admin/creneaux', label: 'Créneaux', icon: Clock },
@@ -87,18 +93,21 @@ function Sidebar({
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href, item.exact);
+          const indent = 'indent' in item && item.indent;
           return (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              className={`flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150 ${
+                indent && !collapsed ? 'pl-9 pr-3 py-2' : 'px-3 py-2.5'
+              } ${
                 active
                   ? 'bg-[#D4A017]/10 text-[#D4A017] dark:bg-[#D4A017]/20'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              <Icon size={20} className={active ? 'text-[#D4A017]' : ''} />
+              <Icon size={indent ? 16 : 20} className={active ? 'text-[#D4A017]' : ''} />
               {!collapsed && <span>{item.label}</span>}
             </Link>
           );
