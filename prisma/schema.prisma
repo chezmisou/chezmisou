@@ -10,6 +10,8 @@ datasource db {
 enum Role {
   CLIENT
   ADMIN
+  SUPER_ADMIN
+  CHURCH_MANAGER
 }
 
 enum Category {
@@ -63,11 +65,13 @@ model User {
   phone     String?
   password  String?
   role      Role     @default(CLIENT)
+  churchId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   addresses Address[]
   orders    Order[]
+  church    Church?   @relation(fields: [churchId], references: [id])
 }
 
 model Address {
@@ -201,4 +205,79 @@ model SiteConfig {
   sundayDeadline      String @default("Saturday 20:00")
   pickupAddress       String @default("")
   pickupHours         String @default("")
+}
+
+// ==================== LAC (Lunch After Church) Models ====================
+
+enum SlotStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum RecurrenceFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY_FIRST
+  MONTHLY_SECOND
+  MONTHLY_THIRD
+  MONTHLY_FOURTH
+  MONTHLY_LAST
+}
+
+model Church {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  contactName  String
+  contactEmail String
+  contactPhone String?
+  address      String?
+  city         String?
+  logoUrl      String?
+  color        String   @default("#6366f1")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  accessSlots     AccessSlot[]
+  recurrenceRules RecurrenceRule[]
+  users           User[]
+}
+
+model AccessSlot {
+  id              String     @id @default(cuid())
+  churchId        String
+  date            DateTime
+  status          SlotStatus @default(SCHEDULED)
+  maxParticipants Int?
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  church Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  @@unique([churchId, date])
+}
+
+model RecurrenceRule {
+  id        String              @id @default(cuid())
+  churchId  String
+  frequency RecurrenceFrequency
+  isActive  Boolean             @default(true)
+  startDate DateTime
+  endDate   DateTime?
+  createdAt DateTime            @default(now())
+
+  church Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+}
+
+model LacConfig {
+  id                    String  @id @default(cuid())
+  maxChurchesPerSunday  Int     @default(1)
+  defaultStartTime      String  @default("12:00")
+  defaultEndTime        String  @default("15:00")
+  reminderEmailsEnabled Boolean @default(true)
+  reminderDaysBefore    Int     @default(3)
 }
