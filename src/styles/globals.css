@@ -84,3 +84,35 @@
 .cart-badge-animate {
   animation: cart-bounce 0.3s ease-in-out;
 }
+
+/* LAC Admin Dark Mode */
+.lac-dark {
+  --lac-bg: #0f0b1a;
+  --lac-surface: #1a1425;
+  --lac-surface-hover: #241e30;
+  --lac-border: #2d2640;
+  --lac-text: #e8e0f0;
+  --lac-text-muted: #9b8fb8;
+}
+
+.lac-light {
+  --lac-bg: #faf8ff;
+  --lac-surface: #ffffff;
+  --lac-surface-hover: #f5f0ff;
+  --lac-border: #e5dff0;
+  --lac-text: #1a1425;
+  --lac-text-muted: #6b5f80;
+}
+
+.lac-admin {
+  font-family: 'DM Sans', sans-serif;
+}
+
+.lac-admin h1,
+.lac-admin h2,
+.lac-admin h3,
+.lac-admin h4,
+.lac-admin h5,
+.lac-admin h6 {
+  font-family: 'DM Sans', sans-serif;
+}
