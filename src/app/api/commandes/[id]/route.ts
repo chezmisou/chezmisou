@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateCommandeStatut } from '@/lib/lac-data';
+import { prisma } from '@/lib/prisma';
 
 export async function PATCH(
   request: NextRequest,
@@ -11,11 +11,16 @@ export async function PATCH(
   }
 
   const body = await request.json();
-  const commande = updateCommandeStatut(params.id, body.statut);
 
-  if (!commande) {
+  try {
+    const order = await prisma.order.update({
+      where: { id: params.id },
+      data: { status: body.statut === 'servie' ? 'DELIVERED' : 'PENDING' },
+    });
+
+    return NextResponse.json(order);
+  } catch (error) {
+    console.error('Error updating commande:', error);
     return NextResponse.json({ error: 'Commande non trouvée' }, { status: 404 });
   }
-
-  return NextResponse.json(commande);
 }
