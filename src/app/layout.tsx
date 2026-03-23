@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
+import Header from "@/components/ui/Header";
+import Footer from "@/components/ui/Footer";
+import BottomNav from "@/components/ui/BottomNav";
 
 export const metadata: Metadata = {
-  title: "Lunch After Church — Bon manje, bon konpayi",
+  title: "Chez Misou — Lakay ou, nan chak bouch",
   description:
-    "Commandez votre repas du dimanche. Banan Peze, Riz Djondjon, Poulet frit et plus encore!",
+    "Saveurs authentiques d'Haïti. Traiteur, Lunch After Church, Épicerie Fine — préparées avec amour.",
 };
 
 export default function RootLayout({
@@ -15,7 +18,10 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className="min-h-screen flex flex-col">
-        {children}
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+        <BottomNav />
       </body>
     </html>
   );
