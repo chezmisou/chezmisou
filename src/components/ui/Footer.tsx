@@ -29,6 +29,9 @@ export default function Footer() {
               <Link href="/lunch-after-church" className="hover:text-brand-gold transition-colors">
                 Lunch After Church
               </Link>
+              <Link href="/epicerie-fine" className="hover:text-brand-gold transition-colors">
+                Épicerie Fine
+              </Link>
               <Link href="/cart" className="hover:text-brand-gold transition-colors">
                 Panye (Panier)
               </Link>
@@ -48,6 +51,9 @@ export default function Footer() {
 
         <div className="border-t border-brand-cream/20 mt-8 pt-8 text-center text-sm text-brand-cream/50">
           <p>&copy; {new Date().getFullYear()} Chez Misou. Tout dwa rezève.</p>
+          <Link href="/admin" className="text-brand-cream/30 hover:text-brand-cream/60 transition-colors text-xs mt-2 inline-block">
+            Administration
+          </Link>
         </div>
       </div>
     </footer>

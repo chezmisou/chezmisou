@@ -1,335 +1,242 @@
-'use client';
+import Link from "next/link";
 
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
+const services = [
+  {
+    title: "Lunch After Church",
+    description: "Bon manje aprè legliz chak dimanch",
+    href: "/lunch-after-church",
+    icon: (
+      <svg
+        viewBox="0 0 64 64"
+        fill="none"
+        className="w-16 h-16"
+        aria-hidden="true"
+      >
+        <circle cx="32" cy="32" r="28" fill="#FCD116" fillOpacity={0.2} />
+        <path
+          d="M20 38c0-6.627 5.373-12 12-12s12 5.373 12 12"
+          stroke="#D21034"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <ellipse cx="32" cy="40" rx="16" ry="4" fill="#A0522D" fillOpacity={0.3} />
+        <path
+          d="M28 26c-1-6 2-10 4-10s5 4 4 10"
+          stroke="#2D6A4F"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <circle cx="24" cy="34" r="2" fill="#D21034" />
+        <circle cx="32" cy="32" r="2" fill="#FCD116" />
+        <circle cx="40" cy="34" r="2" fill="#2D6A4F" />
+      </svg>
+    ),
+    bg: "bg-gradient-to-br from-[#D21034] to-[#A0522D]",
+    accent: "text-yellow-200",
+  },
+  {
+    title: "Traiteur",
+    description: "Fèt, maryaj, tout evènman ou yo",
+    href: "/traiteur",
+    icon: (
+      <svg
+        viewBox="0 0 64 64"
+        fill="none"
+        className="w-16 h-16"
+        aria-hidden="true"
+      >
+        <circle cx="32" cy="32" r="28" fill="#FCD116" fillOpacity={0.2} />
+        <rect x="16" y="34" width="32" height="8" rx="2" fill="#5C3D2E" fillOpacity={0.3} />
+        <path
+          d="M14 34h36"
+          stroke="#A0522D"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M18 34c0-8 6-16 14-16s14 8 14 16"
+          stroke="#D21034"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M32 18v-4M28 20l-2-3M36 20l2-3"
+          stroke="#FCD116"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+    bg: "bg-gradient-to-br from-[#2D6A4F] to-[#1a4030]",
+    accent: "text-emerald-200",
+  },
+  {
+    title: "Épicerie Fine",
+    description: "Epis, piman, kremas ak plis ankò",
+    href: "/epicerie-fine",
+    icon: (
+      <svg
+        viewBox="0 0 64 64"
+        fill="none"
+        className="w-16 h-16"
+        aria-hidden="true"
+      >
+        <circle cx="32" cy="32" r="28" fill="#FCD116" fillOpacity={0.2} />
+        <rect x="22" y="20" width="12" height="24" rx="3" stroke="#A0522D" strokeWidth="2.5" />
+        <rect x="22" y="20" width="12" height="8" rx="3" fill="#D21034" fillOpacity={0.3} />
+        <path d="M26 28h4" stroke="#A0522D" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="42" cy="36" r="6" stroke="#2D6A4F" strokeWidth="2" />
+        <path
+          d="M42 32v4M40 36h4"
+          stroke="#2D6A4F"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M38 22c2-3 6-3 8 0"
+          stroke="#FCD116"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+    bg: "bg-gradient-to-br from-[#D4A017] to-[#b8890f]",
+    accent: "text-yellow-100",
+  },
+];
 
-interface MenuItem {
-  nom: string;
-  description: string;
-  prix: number;
-}
+const placeholderReviews = [
+  {
+    name: "Marie-Claire",
+    text: "Meilleur griot de tout Port-au-Prince ! Chak fwa m kòmande, se yon fèt nan bouch mwen.",
+  },
+  {
+    name: "Jean-Baptiste",
+    text: "Le traiteur pour notre mariage était parfait. Tout le monde a adoré le riz djondjon.",
+  },
+  {
+    name: "Stéphanie",
+    text: "Les épices sont incroyables, un vrai goût d'Haïti. Mwen pa ka viv san epis Chez Misou !",
+  },
+];
 
-interface MenuData {
-  menu: { choix_1: MenuItem; choix_2: MenuItem; choix_3: MenuItem };
-  supplements: { piment: { nom: string; prix: number }; boisson: { nom: string; prix: number } };
-  devise: string;
-}
-
-const EMOJIS: Record<string, string> = {
-  choix_1: '🍌',
-  choix_2: '🍚',
-  choix_3: '🍗',
-};
-
-function formatPrice(prix: number, devise: string) {
-  if (devise === 'HTG') return `${prix.toLocaleString()} HTG`;
-  return `$${prix.toFixed(2)}`;
-}
-
-export default function ClientPage() {
-  const [menu, setMenu] = useState<MenuData | null>(null);
-  const [selectedChoix, setSelectedChoix] = useState<string | null>(null);
-  const [supplements, setSupplements] = useState<string[]>([]);
-  const [quantite, setQuantite] = useState(1);
-  const [nomClient, setNomClient] = useState('');
-  const [telephone, setTelephone] = useState('');
-  const [showRecap, setShowRecap] = useState(false);
-  const [confirmation, setConfirmation] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    fetch('/api/menu')
-      .then(r => r.json())
-      .then(data => { setMenu(data); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const menuNotConfigured = menu && Object.values(menu.menu).every(item => item.prix === 0);
-
-  const toggleSupplement = (key: string) => {
-    setSupplements(prev => prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]);
-  };
-
-  const calculateTotal = useCallback(() => {
-    if (!menu || !selectedChoix) return 0;
-    const choixKey = selectedChoix as keyof typeof menu.menu;
-    let total = menu.menu[choixKey].prix * quantite;
-    for (const sup of supplements) {
-      const supKey = sup as keyof typeof menu.supplements;
-      total += menu.supplements[supKey].prix * quantite;
-    }
-    return total;
-  }, [menu, selectedChoix, supplements, quantite]);
-
-  const handleSubmit = async () => {
-    if (!menu || !selectedChoix || !nomClient.trim()) return;
-    setSubmitting(true);
-    try {
-      const res = await fetch('/api/commandes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nom_client: nomClient.trim(),
-          telephone: telephone.trim(),
-          choix: selectedChoix,
-          supplements,
-          quantite,
-          total: calculateTotal(),
-        }),
-      });
-      const data = await res.json();
-      setConfirmation(data.id);
-      setShowRecap(false);
-      setSelectedChoix(null);
-      setSupplements([]);
-      setQuantite(1);
-      setNomClient('');
-      setTelephone('');
-    } catch {
-      alert('Erreur lors de la commande. Veuillez réessayer.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-[#D4A017] border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  if (confirmation) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <header className="bg-[#A0522D] text-white py-6 px-4 text-center">
-          <h1 className="text-2xl md:text-3xl font-display font-bold">🍗 Lunch After Church</h1>
-          <p className="font-accent text-lg opacity-90 mt-1">Bon manje, bon konpayi</p>
-        </header>
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
-            <div className="text-5xl mb-4">✅</div>
-            <h2 className="text-2xl font-display font-bold text-[#3B2314] mb-2">Mèsi anpil!</h2>
-            <p className="text-[#3B2314]/70 mb-4">Votre commande a été enregistrée avec succès.</p>
-            <div className="bg-[#FFFDF7] rounded-xl p-4 mb-6">
-              <p className="text-sm text-[#3B2314]/60">Numéro de commande</p>
-              <p className="text-2xl font-bold text-[#D4A017]">{confirmation}</p>
-            </div>
-            <p className="text-sm text-[#3B2314]/60 mb-6">Présentez ce numéro lors du retrait de votre commande.</p>
-            <button
-              onClick={() => setConfirmation(null)}
-              className="btn-gold w-full"
-            >
-              Passer une autre commande
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-[#A0522D] text-white py-6 px-4 text-center shadow-lg">
-        <h1 className="text-2xl md:text-3xl font-display font-bold">🍗 Lunch After Church</h1>
-        <p className="font-accent text-lg opacity-90 mt-1">Bon manje, bon konpayi</p>
-      </header>
+    <div className="flex flex-col">
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#D21034] via-[#A0522D] to-[#3B2314] text-white">
+        {/* Decorative pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+              backgroundSize: "32px 32px",
+            }}
+          />
+        </div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#FCD116] rounded-full blur-[120px] opacity-20" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#2D6A4F] rounded-full blur-[100px] opacity-20" />
 
-      <main className="flex-1 max-w-2xl mx-auto w-full p-4 md:p-6">
-        {menuNotConfigured ? (
-          <div className="bg-[#FFF3CD] border border-[#D4A017] rounded-2xl p-6 text-center mt-8">
-            <div className="text-4xl mb-3">⏳</div>
-            <h2 className="text-xl font-display font-bold text-[#3B2314] mb-2">Menu pas encore configuré</h2>
-            <p className="text-[#3B2314]/70">Les prix n&apos;ont pas encore été définis. Revenez bientôt!</p>
+        <div className="relative max-w-4xl mx-auto px-4 py-20 md:py-28 text-center">
+          <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight">
+            Chez Misou
+          </h1>
+          <p className="font-accent text-3xl md:text-4xl mt-4 text-[#FCD116]">
+            Mangé lakay
+          </p>
+          <p className="mt-6 text-lg md:text-xl text-white/80 max-w-xl mx-auto">
+            Saveurs authentiques d&apos;Haïti, préparées avec amour.
+            Traiteur, repas du dimanche et épicerie fine.
+          </p>
+        </div>
+      </section>
+
+      {/* Service Cards */}
+      <section className="max-w-5xl mx-auto w-full px-4 -mt-8 md:-mt-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {services.map((service) => (
+            <Link
+              key={service.href}
+              href={service.href}
+              className={`${service.bg} rounded-2xl p-6 md:p-8 text-white shadow-lg
+                transform transition-all duration-300
+                hover:scale-[1.03] hover:shadow-2xl
+                focus:outline-none focus:ring-4 focus:ring-[#FCD116]/50
+                group`}
+            >
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="transition-transform duration-300 group-hover:scale-110">
+                  {service.icon}
+                </div>
+                <h2 className="font-display text-xl md:text-2xl font-bold">
+                  {service.title}
+                </h2>
+                <p className={`text-sm md:text-base ${service.accent} opacity-90`}>
+                  {service.description}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Reviews */}
+      <section className="max-w-5xl mx-auto w-full px-4 py-16 md:py-24">
+        <div className="text-center mb-10">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-[#3B2314]">
+            Sa kliyan nou yo di
+          </h2>
+          <p className="text-[#3B2314]/60 mt-2">
+            Avis de nos clients
+          </p>
+        </div>
+
+        {placeholderReviews.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {placeholderReviews.map((review) => (
+              <div
+                key={review.name}
+                className="bg-white rounded-2xl shadow-md p-6 border border-[#FCD116]/20
+                  hover:shadow-lg transition-shadow duration-300"
+              >
+                <div className="flex gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <svg
+                      key={i}
+                      className="w-5 h-5 text-[#FCD116]"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-[#3B2314]/80 text-sm leading-relaxed mb-4">
+                  &ldquo;{review.text}&rdquo;
+                </p>
+                <p className="font-semibold text-[#A0522D]">{review.name}</p>
+              </div>
+            ))}
           </div>
         ) : (
-          <>
-            {/* Menu choices */}
-            <h2 className="text-xl font-display font-bold text-[#3B2314] mt-4 mb-3">Choisissez votre plat</h2>
-            <div className="space-y-3">
-              {menu && Object.entries(menu.menu).map(([key, item]) => (
-                <button
-                  key={key}
-                  onClick={() => { setSelectedChoix(key); setShowRecap(false); }}
-                  className={`w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 ${
-                    selectedChoix === key
-                      ? 'border-[#D4A017] bg-[#D4A017]/10 shadow-md'
-                      : 'border-gray-200 bg-white hover:border-[#D4A017]/50'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="text-3xl">{EMOJIS[key]}</span>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-bold text-[#3B2314]">{item.nom}</h3>
-                        <span className="font-bold text-[#D4A017] whitespace-nowrap ml-2">
-                          {formatPrice(item.prix, menu.devise)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-[#3B2314]/60 mt-1">{item.description}</p>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Supplements */}
-            {selectedChoix && menu && (
-              <div className="mt-6">
-                <h2 className="text-xl font-display font-bold text-[#3B2314] mb-3">Suppléments</h2>
-                <div className="space-y-2">
-                  {Object.entries(menu.supplements).map(([key, sup]) => (
-                    <label
-                      key={key}
-                      className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        supplements.includes(key)
-                          ? 'border-[#D4A017] bg-[#D4A017]/10'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
-                          supplements.includes(key)
-                            ? 'bg-[#D4A017] border-[#D4A017]'
-                            : 'border-gray-300'
-                        }`}>
-                          {supplements.includes(key) && (
-                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </div>
-                        <span className="font-medium text-[#3B2314]">
-                          {key === 'piment' ? '🌶️' : '🥤'} {sup.nom}
-                        </span>
-                      </div>
-                      <span className="font-bold text-[#D4A017]">
-                        +{formatPrice(sup.prix, menu.devise)}
-                      </span>
-                      <input
-                        type="checkbox"
-                        className="hidden"
-                        checked={supplements.includes(key)}
-                        onChange={() => toggleSupplement(key)}
-                      />
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Quantity */}
-            {selectedChoix && (
-              <div className="mt-6">
-                <h2 className="text-xl font-display font-bold text-[#3B2314] mb-3">Quantité</h2>
-                <div className="flex items-center gap-4 bg-white rounded-xl border-2 border-gray-200 p-3 w-fit">
-                  <button
-                    onClick={() => setQuantite(q => Math.max(1, q - 1))}
-                    className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-xl font-bold transition-colors"
-                  >
-                    −
-                  </button>
-                  <span className="text-xl font-bold w-8 text-center">{quantite}</span>
-                  <button
-                    onClick={() => setQuantite(q => q + 1)}
-                    className="w-10 h-10 rounded-lg bg-[#D4A017] hover:bg-[#b8890f] text-white flex items-center justify-center text-xl font-bold transition-colors"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Customer info */}
-            {selectedChoix && (
-              <div className="mt-6 space-y-4">
-                <h2 className="text-xl font-display font-bold text-[#3B2314] mb-3">Vos informations</h2>
-                <div>
-                  <label className="block text-sm font-medium text-[#3B2314]/70 mb-1">
-                    Nom <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={nomClient}
-                    onChange={e => setNomClient(e.target.value)}
-                    placeholder="Votre nom"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#D4A017] focus:outline-none transition-colors bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#3B2314]/70 mb-1">
-                    Téléphone <span className="text-[#3B2314]/40">(optionnel)</span>
-                  </label>
-                  <input
-                    type="tel"
-                    value={telephone}
-                    onChange={e => setTelephone(e.target.value)}
-                    placeholder="Numéro de téléphone"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#D4A017] focus:outline-none transition-colors bg-white"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Recap button */}
-            {selectedChoix && nomClient.trim() && !showRecap && (
-              <button
-                onClick={() => setShowRecap(true)}
-                className="btn-gold w-full mt-6 text-lg"
-              >
-                Voir le récapitulatif
-              </button>
-            )}
-
-            {/* Recap */}
-            {showRecap && menu && selectedChoix && (
-              <div className="mt-6 bg-white rounded-2xl border-2 border-[#D4A017] p-5">
-                <h3 className="font-display font-bold text-lg text-[#3B2314] mb-4">Récapitulatif</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>{EMOJIS[selectedChoix]} {menu.menu[selectedChoix as keyof typeof menu.menu].nom} × {quantite}</span>
-                    <span className="font-semibold">
-                      {formatPrice(menu.menu[selectedChoix as keyof typeof menu.menu].prix * quantite, menu.devise)}
-                    </span>
-                  </div>
-                  {supplements.map(s => (
-                    <div key={s} className="flex justify-between text-[#3B2314]/70">
-                      <span>{s === 'piment' ? '🌶️' : '🥤'} {menu.supplements[s as keyof typeof menu.supplements].nom} × {quantite}</span>
-                      <span>{formatPrice(menu.supplements[s as keyof typeof menu.supplements].prix * quantite, menu.devise)}</span>
-                    </div>
-                  ))}
-                  <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between font-bold text-base">
-                    <span>Total</span>
-                    <span className="text-[#D4A017]">{formatPrice(calculateTotal(), menu.devise)}</span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-gray-100 text-sm text-[#3B2314]/60">
-                  <p><strong>Nom:</strong> {nomClient}</p>
-                  {telephone && <p><strong>Tél:</strong> {telephone}</p>}
-                </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                  className="btn-red w-full mt-4 text-lg disabled:opacity-50"
-                >
-                  {submitting ? 'Envoi en cours...' : 'Confirmer la commande'}
-                </button>
-              </div>
-            )}
-          </>
+          <div className="text-center py-12 bg-white rounded-2xl shadow-md border border-[#FCD116]/20">
+            <p className="text-[#3B2314]/60 text-lg">
+              Soyez le premier à donner votre avis !
+            </p>
+          </div>
         )}
-      </main>
+      </section>
 
-      {/* Footer */}
-      <footer className="text-center py-4 text-sm text-[#3B2314]/40 space-y-1">
-        <p>Lunch After Church &copy; {new Date().getFullYear()}</p>
-        <Link href="/admin" className="text-[#D4A017] hover:underline">
+      {/* Admin link */}
+      <div className="text-center pb-6">
+        <Link
+          href="/admin"
+          className="text-xs text-[#3B2314]/30 hover:text-[#3B2314]/60 transition-colors"
+        >
           Administration
         </Link>
-      </footer>
+      </div>
     </div>
   );
 }
