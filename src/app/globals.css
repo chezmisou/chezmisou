@@ -47,4 +47,17 @@
     color: var(--text-body);
     background-color: var(--blanc);
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-playfair), serif;
+  }
+}
+
+/* Bounce animation for scroll indicator */
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
 }

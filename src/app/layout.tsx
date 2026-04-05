@@ -24,9 +24,21 @@ const dmSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Chez Misou · Manje Lakay",
+  title: {
+    default: "Chez Misou \u2014 Manje Lakay",
+    template: "%s \u00b7 Chez Misou",
+  },
   description:
-    "Produits haïtiens authentiques : épicerie fine, traiteur et service LAC pour la diaspora en France.",
+    "Le go\u00fbt authentique d\u2019Ha\u00efti, comme \u00e0 la maison. \u00c9picerie fine, traiteur et Lunch After Church par Misou.",
+  openGraph: {
+    title: "Chez Misou \u2014 Manje Lakay",
+    description:
+      "Le go\u00fbt authentique d\u2019Ha\u00efti, comme \u00e0 la maison. \u00c9picerie fine, traiteur et Lunch After Church par Misou.",
+    images: ["/logo-chez-misou.png"],
+  },
+  icons: {
+    icon: "/logo-chez-misou.png",
+  },
 };
 
 export default function RootLayout({
@@ -36,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${playfair.variable} ${dmSans.variable}`}>
-      <body className="antialiased">{children}</body>
+      <body className="min-h-screen flex flex-col antialiased">{children}</body>
     </html>
   );
 }
