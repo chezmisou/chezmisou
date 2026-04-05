@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 export const metadata: Metadata = {
   title: "Traiteur",
   description:
-    "Bient\u00f4t, notre catalogue de plats pour vos \u00e9v\u00e9nements. Cuisine ha\u00eftienne authentique par Misou.",
+    "Bientôt, notre catalogue de plats pour vos événements. Cuisine haïtienne authentique par Misou.",
 };
 
 export default function TraiteurPage() {
@@ -24,10 +24,10 @@ export default function TraiteurPage() {
         <Link
           href="/"
           className="mt-10 inline-flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-marron-profond text-marron-profond font-sans font-semibold hover:bg-marron-profond hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-marron-profond focus:ring-offset-2"
-          aria-label="Retour \u00e0 l\u2019accueil"
+          aria-label="Retour à l’accueil"
         >
           <ArrowLeft size={18} aria-hidden="true" />
-          Retour \u00e0 l&rsquo;accueil
+          Retour à l&rsquo;accueil
         </Link>
       </div>
     </section>

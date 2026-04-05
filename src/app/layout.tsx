@@ -25,15 +25,15 @@ const dmSans = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "Chez Misou \u2014 Manje Lakay",
-    template: "%s \u00b7 Chez Misou",
+    default: "Chez Misou — Manje Lakay",
+    template: "%s · Chez Misou",
   },
   description:
-    "Le go\u00fbt authentique d\u2019Ha\u00efti, comme \u00e0 la maison. \u00c9picerie fine, traiteur et Lunch After Church par Misou.",
+    "Le goût authentique d’Haïti, comme à la maison. Épicerie fine, traiteur et Lunch After Church par Misou.",
   openGraph: {
-    title: "Chez Misou \u2014 Manje Lakay",
+    title: "Chez Misou — Manje Lakay",
     description:
-      "Le go\u00fbt authentique d\u2019Ha\u00efti, comme \u00e0 la maison. \u00c9picerie fine, traiteur et Lunch After Church par Misou.",
+      "Le goût authentique d’Haïti, comme à la maison. Épicerie fine, traiteur et Lunch After Church par Misou.",
     images: ["/logo-chez-misou.png"],
   },
   icons: {

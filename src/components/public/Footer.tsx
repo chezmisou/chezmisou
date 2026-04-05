@@ -5,7 +5,7 @@ import { Mail } from "lucide-react";
 const navLinks = [
   { label: "Chez Misou", href: "/" },
   { label: "Lakay", href: "/#histoire" },
-  { label: "\u00c9picerie", href: "/epicerie" },
+  { label: "Épicerie", href: "/epicerie" },
   { label: "Traiteur", href: "/traiteur" },
   { label: "Lunch After Church", href: "/lac" },
   { label: "Contact", href: "/contact" },
@@ -20,7 +20,7 @@ export default function Footer() {
           <div>
             <Image
               src="/logo-chez-misou.png"
-              alt="Logo Chez Misou \u2014 Manje Lakay"
+              alt="Logo Chez Misou — Manje Lakay"
               width={64}
               height={64}
               className="h-16 w-auto mb-4"
@@ -61,7 +61,7 @@ export default function Footer() {
               <a
                 href="mailto:contact@chezmisou.com"
                 className="flex items-center gap-2 hover:text-orange transition-colors duration-200"
-                aria-label="Envoyer un email \u00e0 contact@chezmisou.com"
+                aria-label="Envoyer un email à contact@chezmisou.com"
               >
                 <Mail size={16} />
                 contact@chezmisou.com
@@ -92,21 +92,21 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Barre s\u00e9paratrice + mentions */}
+        {/* Barre séparatrice + mentions */}
         <div className="border-t border-blanc-creme/15 mt-10 pt-8">
           <p className="text-center text-sm text-blanc-creme/50">
             &copy; 2026 Chez Misou &mdash; Manje Lakay. Tous droits r&eacute;serv&eacute;s.
           </p>
           <div className="flex items-center justify-center gap-4 mt-3 text-xs text-blanc-creme/40">
-            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Mentions l\u00e9gales">
+            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Mentions légales">
               Mentions l&eacute;gales
             </a>
             <span>&middot;</span>
-            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Conditions g\u00e9n\u00e9rales de vente">
+            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Conditions générales de vente">
               CGV
             </a>
             <span>&middot;</span>
-            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Politique de confidentialit\u00e9">
+            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Politique de confidentialité">
               Confidentialit&eacute;
             </a>
           </div>

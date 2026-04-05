@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 const navLinks = [
   { label: "Chez Misou", href: "/", ariaLabel: "Accueil Chez Misou" },
   { label: "Lakay", href: "/#histoire", ariaLabel: "Notre histoire" },
-  { label: "\u00c9picerie", href: "/epicerie", ariaLabel: "\u00c9picerie fine" },
+  { label: "Épicerie", href: "/epicerie", ariaLabel: "Épicerie fine" },
   { label: "Traiteur", href: "/traiteur", ariaLabel: "Service traiteur" },
   { label: "Lunch After Church", href: "/lac", ariaLabel: "Lunch After Church" },
   { label: "Contact", href: "/contact", ariaLabel: "Nous contacter" },
@@ -46,7 +46,7 @@ export default function Navbar() {
         <Link href="/" aria-label="Accueil Chez Misou" className="flex-shrink-0">
           <Image
             src="/logo-chez-misou.png"
-            alt="Logo Chez Misou \u2014 Manje Lakay"
+            alt="Logo Chez Misou — Manje Lakay"
             width={48}
             height={48}
             priority
