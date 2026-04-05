@@ -332,6 +332,58 @@ model EpicerieProduct {
   categoryInfo EpicerieCategoryInfo @relation(fields: [category], references: [key])
 }
 
+// ==================== Catalogue Épicerie (Lot 2a) ====================
+
+model CatalogProduct {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  basePrice   Decimal  @default(0)
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  images   CatalogProductImage[]
+  variants CatalogProductVariant[]
+
+  @@map("catalog_product")
+}
+
+model CatalogProductImage {
+  id        String @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  position  Int    @default(0)
+
+  product CatalogProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("catalog_product_image")
+}
+
+model CatalogProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  name      String
+  price     Decimal
+  stock     Int     @default(0)
+  position  Int     @default(0)
+
+  product CatalogProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("catalog_product_variant")
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+
+  @@map("setting")
+}
+
 // ==================== LAC Menu (migré depuis JSON vers DB) ====================
 
 model LacMenu {

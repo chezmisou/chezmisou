@@ -3,6 +3,7 @@ import "@/styles/globals.css";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 import BottomNav from "@/components/ui/BottomNav";
+import { CartProvider } from "@/lib/cart/CartContext";
 
 export const metadata: Metadata = {
   title: "Chez Misou — Lakay ou, nan chak bouch",
@@ -18,10 +19,12 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <BottomNav />
+        <CartProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <BottomNav />
+        </CartProvider>
       </body>
     </html>
   );
