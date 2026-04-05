@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import CartButton from "@/components/public/CartButton";
 
 const navLinks = [
   { label: "Chez Misou", href: "/", ariaLabel: "Accueil Chez Misou" },
@@ -74,15 +75,20 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="lg:hidden p-2 rounded-lg text-marron-profond hover:bg-marron-profond/10 transition-colors focus:outline-none focus:ring-2 focus:ring-orange"
-          aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
-          aria-expanded={mobileOpen}
-        >
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Cart button */}
+          <CartButton />
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="lg:hidden p-2 rounded-lg text-marron-profond hover:bg-marron-profond/10 transition-colors focus:outline-none focus:ring-2 focus:ring-orange"
+            aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile drawer */}
