@@ -4,23 +4,23 @@ import { ShoppingBag, UtensilsCrossed, Sun, ChevronDown, ArrowRight } from "luci
 
 const activities = [
   {
-    title: "\u00c9picerie fine",
+    title: "Épicerie fine",
     description:
-      "Garnissez vos placards d\u2019\u00e9pices, de piments, de confitures et du fameux kr\u00e9mas \u2014 le tr\u00e9sor liquide d\u2019Ha\u00efti.",
+      "Garnissez vos placards d’épices, de piments, de confitures et du fameux krémas — le trésor liquide d’Haïti.",
     href: "/epicerie",
     icon: ShoppingBag,
   },
   {
     title: "Traiteur",
     description:
-      "Offrez \u00e0 vos invit\u00e9s un repas qui ne ressemble \u00e0 aucun autre. Anniversaires, f\u00eates de famille, plateaux repas.",
+      "Offrez à vos invités un repas qui ne ressemble à aucun autre. Anniversaires, fêtes de famille, plateaux repas.",
     href: "/traiteur",
     icon: UtensilsCrossed,
   },
   {
     title: "Lunch After Church",
     description:
-      "Le rendez-vous du dimanche\u00a0: un menu pr\u00e9par\u00e9 chaque semaine avec amour, \u00e0 retirer ou \u00e0 se faire livrer.",
+      "Le rendez-vous du dimanche : un menu préparé chaque semaine avec amour, à retirer ou à se faire livrer.",
     href: "/lac",
     icon: Sun,
   },
@@ -29,17 +29,17 @@ const activities = [
 export default function HomePage() {
   return (
     <div className="flex flex-col">
-      {/* Section A \u2014 Hero */}
+      {/* Section A — Hero */}
       <section className="relative min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-blanc-creme via-blanc-chaud to-jaune-clair/30">
         <div className="relative max-w-4xl mx-auto px-4 py-20 text-center">
           <p className="text-xs uppercase tracking-[0.25em] text-orange font-sans font-medium mb-8">
-            \u00c9picerie &middot; Traiteur &middot; Lunch After Church
+            Épicerie &middot; Traiteur &middot; Lunch After Church
           </p>
 
           <h1 className="font-serif text-5xl md:text-7xl font-bold text-marron-profond leading-tight">
-            Le go\u00fbt d&rsquo;<em className="italic text-orange">Ha\u00efti</em>,
+            Le goût d&rsquo;<em className="italic text-orange">Haïti</em>,
             <br />
-            comme \u00e0{" "}
+            comme à{" "}
             <em className="italic text-orange">la maison</em>.
           </h1>
 
@@ -53,14 +53,14 @@ export default function HomePage() {
             <Link
               href="/epicerie"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-orange text-white font-sans font-semibold text-base hover:bg-orange-vif transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-orange focus:ring-offset-2"
-              aria-label="D\u00e9couvrir l\u2019\u00e9picerie"
+              aria-label="Découvrir l’épicerie"
             >
               D&eacute;couvrir l&rsquo;&eacute;picerie
             </Link>
             <a
               href="#histoire"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border-2 border-marron-profond text-marron-profond font-sans font-semibold text-base hover:bg-marron-profond hover:text-white transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-marron-profond focus:ring-offset-2"
-              aria-label="D\u00e9couvrir notre histoire"
+              aria-label="Découvrir notre histoire"
             >
               Notre histoire
             </a>
@@ -73,7 +73,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section B \u2014 Histoire de Misou */}
+      {/* Section B — Histoire de Misou */}
       <section id="histoire" className="bg-blanc-creme py-20 md:py-28">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -104,30 +104,30 @@ export default function HomePage() {
 
               <div className="space-y-5 text-text-body font-sans leading-relaxed text-base md:text-lg">
                 <p>
-                  Ha\u00eftienne expatri\u00e9e en France, Misou a emport\u00e9 avec elle quelque chose
-                  qui ne tient dans aucune valise&nbsp;: le go\u00fbt de son \u00eele. Celui des
-                  \u00e9pices qui embaument la cuisine de sa m\u00e8re, des piments qui br\u00fblent juste
-                  ce qu&rsquo;il faut, du kr\u00e9mas qu&rsquo;on partage les soirs de f\u00eate &mdash;
-                  ce tr\u00e9sor liquide d&rsquo;Ha\u00efti.
+                  Haïtienne expatriée en France, Misou a emporté avec elle quelque chose
+                  qui ne tient dans aucune valise&nbsp;: le goût de son île. Celui des
+                  épices qui embaument la cuisine de sa mère, des piments qui brûlent juste
+                  ce qu&rsquo;il faut, du krémas qu&rsquo;on partage les soirs de fête &mdash;
+                  ce trésor liquide d&rsquo;Haïti.
                 </p>
                 <p>
-                  Loin du pays, elle a vu combien ces saveurs manquaient \u00e0 celles et ceux qui,
+                  Loin du pays, elle a vu combien ces saveurs manquaient à celles et ceux qui,
                   comme elle, avaient fait le voyage. Et combien elles restaient inconnues de ceux
-                  qui n&rsquo;avaient jamais pos\u00e9 le pied sur la Perle des Antilles.
+                  qui n&rsquo;avaient jamais posé le pied sur la Perle des Antilles.
                 </p>
                 <p>
-                  Alors Misou a d\u00e9cid\u00e9 de faire passerelle. De rapprocher ce qui est loin, de
-                  faire d\u00e9couvrir ce qui m\u00e9rite de l&rsquo;\u00eatre.{" "}
+                  Alors Misou a décidé de faire passerelle. De rapprocher ce qui est loin, de
+                  faire découvrir ce qui mérite de l&rsquo;être.{" "}
                   <strong>Chez Misou &mdash; Manje Lakay</strong>, c&rsquo;est cette promesse&nbsp;:
-                  qu&rsquo;o\u00f9 que vous soyez, il y ait toujours une place \u00e0 table pour un peu
-                  d&rsquo;Ha\u00efti.
+                  qu&rsquo;où que vous soyez, il y ait toujours une place à table pour un peu
+                  d&rsquo;Haïti.
                 </p>
               </div>
 
-              {/* Slogan d\u00e9cor\u00e9 */}
+              {/* Slogan décoré */}
               <div className="mt-10 pl-6 border-l-4 border-orange">
                 <p className="font-serif italic text-2xl text-orange leading-snug">
-                  Manje lakay, partout o\u00f9 vous \u00eates.
+                  Manje lakay, partout où vous êtes.
                 </p>
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section C \u2014 Les 3 activit\u00e9s */}
+      {/* Section C — Les 3 activités */}
       <section className="relative bg-marron-profond py-20 md:py-28 overflow-hidden">
         {/* Subtle decorative overlay */}
         <div className="absolute inset-0 opacity-5" aria-hidden="true">
@@ -151,11 +151,11 @@ export default function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="font-serif text-blanc-creme text-4xl md:text-5xl font-bold">
-              Trois fa\u00e7ons de vous ramener au pays
+              Trois façons de vous ramener au pays
             </h2>
             <p className="mt-4 text-marron-doux font-sans text-lg max-w-2xl mx-auto">
-              Que vous cherchiez des produits authentiques, un traiteur pour vos \u00e9v\u00e9nements ou
-              un repas du dimanche pr\u00e9par\u00e9 avec amour, Misou est l\u00e0.
+              Que vous cherchiez des produits authentiques, un traiteur pour vos événements ou
+              un repas du dimanche préparé avec amour, Misou est là.
             </p>
           </div>
 
@@ -179,9 +179,9 @@ export default function HomePage() {
                   <Link
                     href={activity.href}
                     className="inline-flex items-center gap-1 text-orange font-sans font-semibold hover:gap-2 transition-all duration-200"
-                    aria-label={`D\u00e9couvrir ${activity.title}`}
+                    aria-label={`Découvrir ${activity.title}`}
                   >
-                    D\u00e9couvrir <ArrowRight size={16} aria-hidden="true" />
+                    Découvrir <ArrowRight size={16} aria-hidden="true" />
                   </Link>
                 </div>
               );
@@ -190,17 +190,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section D \u2014 CTA final */}
+      {/* Section D — CTA final */}
       <section className="bg-blanc-creme py-20 md:py-28">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="font-serif text-3xl md:text-5xl text-marron-profond font-bold leading-tight">
             Une question&nbsp;?
             <br />
-            Un \u00e9v\u00e9nement \u00e0 organiser&nbsp;?
+            Un événement à organiser&nbsp;?
           </h2>
           <p className="mt-6 text-text-body font-sans text-lg max-w-xl mx-auto">
-            N&rsquo;h\u00e9sitez pas \u00e0 nous contacter pour toute demande de devis, commande
-            particuli\u00e8re ou simple question. Misou sera ravie de vous r\u00e9pondre.
+            N&rsquo;hésitez pas à nous contacter pour toute demande de devis, commande
+            particulière ou simple question. Misou sera ravie de vous répondre.
           </p>
           <Link
             href="/contact"

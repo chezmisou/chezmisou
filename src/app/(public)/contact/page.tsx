@@ -3,9 +3,9 @@ import Link from "next/link";
 import { ArrowLeft, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Nous \u00e9crire",
+  title: "Nous écrire",
   description:
-    "Pour toute question, devis ou commande particuli\u00e8re, \u00e9crivez-nous. Contact Chez Misou \u2014 Manje Lakay.",
+    "Pour toute question, devis ou commande particulière, écrivez-nous. Contact Chez Misou — Manje Lakay.",
 };
 
 export default function ContactPage() {
@@ -24,7 +24,7 @@ export default function ContactPage() {
         <a
           href="mailto:contact@chezmisou.com"
           className="mt-6 inline-flex items-center gap-2 text-orange font-sans font-semibold text-xl hover:text-orange-vif transition-colors duration-200"
-          aria-label="Envoyer un email \u00e0 contact@chezmisou.com"
+          aria-label="Envoyer un email à contact@chezmisou.com"
         >
           <Mail size={22} aria-hidden="true" />
           contact@chezmisou.com
@@ -33,10 +33,10 @@ export default function ContactPage() {
           <Link
             href="/"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-marron-profond text-marron-profond font-sans font-semibold hover:bg-marron-profond hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-marron-profond focus:ring-offset-2"
-            aria-label="Retour \u00e0 l\u2019accueil"
+            aria-label="Retour à l’accueil"
           >
             <ArrowLeft size={18} aria-hidden="true" />
-            Retour \u00e0 l&rsquo;accueil
+            Retour à l&rsquo;accueil
           </Link>
         </div>
       </div>
