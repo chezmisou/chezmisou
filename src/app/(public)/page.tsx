@@ -142,7 +142,7 @@ export default function HomePage() {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: "radial-gradient(circle at 2px 2px, #D4A017 1px, transparent 0)",
+              backgroundImage: "radial-gradient(circle at 2px 2px, #D4762C 1px, transparent 0)",
               backgroundSize: "40px 40px",
             }}
           />
@@ -200,7 +200,7 @@ export default function HomePage() {
           </h2>
           <p className="mt-6 text-text-body font-sans text-lg max-w-xl mx-auto">
             N&rsquo;h\u00e9sitez pas \u00e0 nous contacter pour toute demande de devis, commande
-            particulière ou simple question. Misou sera ravie de vous r\u00e9pondre.
+            particuli\u00e8re ou simple question. Misou sera ravie de vous r\u00e9pondre.
           </p>
           <Link
             href="/contact"
