@@ -10,6 +10,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Charte Chez Misou
+        "marron-profond": "#3B2314",
+        "marron-doux": "#A0886C",
+        orange: "#D4A017",
+        "orange-vif": "#C4900A",
+        "blanc-creme": "#FFF8F0",
+        "blanc-chaud": "#FFF3E4",
+        blanc: "#FFFDF7",
+        "jaune-clair": "#FCD116",
+        "text-body": "#5C4B3A",
+        // Legacy brand colors (for existing admin/shop pages)
         brand: {
           blue: "#6B5731",
           red: "#D21034",
@@ -33,6 +44,8 @@ const config: Config = {
         },
       },
       fontFamily: {
+        serif: ["Playfair Display", "serif"],
+        sans: ["DM Sans", "sans-serif"],
         display: ["Fraunces", "serif"],
         body: ["DM Sans", "sans-serif"],
         accent: ["Caveat", "cursive"],

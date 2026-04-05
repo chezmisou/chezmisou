@@ -1,0 +1,111 @@
+import Link from "next/link";
+import Image from "next/image";
+import { Instagram, Facebook, Mail } from "lucide-react";
+
+const navLinks = [
+  { label: "Chez Misou", href: "/" },
+  { label: "Lakay", href: "/#histoire" },
+  { label: "\u00c9picerie", href: "/epicerie" },
+  { label: "Traiteur", href: "/traiteur" },
+  { label: "Lunch After Church", href: "/lac" },
+  { label: "Contact", href: "/contact" },
+];
+
+export default function Footer() {
+  return (
+    <footer className="bg-marron-profond text-blanc-creme">
+      <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+          {/* Colonne 1 : Marque */}
+          <div>
+            <Image
+              src="/logo-chez-misou.png"
+              alt="Logo Chez Misou \u2014 Manje Lakay"
+              width={64}
+              height={64}
+              className="h-16 w-auto mb-4"
+            />
+            <p className="font-serif text-lg text-blanc-creme/90">
+              Chez Misou &middot; Manje Lakay
+            </p>
+            <p className="mt-2 text-sm text-blanc-creme/60 italic leading-relaxed">
+              Manje lakay, partout o&ugrave; vous &ecirc;tes.
+            </p>
+          </div>
+
+          {/* Colonne 2 : Navigation */}
+          <div>
+            <h4 className="font-serif text-lg font-semibold text-orange mb-4">
+              Navigation
+            </h4>
+            <nav className="flex flex-col gap-2" aria-label="Navigation du pied de page">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-label={link.label}
+                  className="text-sm text-blanc-creme/70 hover:text-orange transition-colors duration-200"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          {/* Colonne 3 : Contact */}
+          <div>
+            <h4 className="font-serif text-lg font-semibold text-orange mb-4">
+              Contact
+            </h4>
+            <div className="flex flex-col gap-3 text-sm text-blanc-creme/70">
+              <a
+                href="mailto:contact@chezmisou.com"
+                className="flex items-center gap-2 hover:text-orange transition-colors duration-200"
+                aria-label="Envoyer un email \u00e0 contact@chezmisou.com"
+              >
+                <Mail size={16} />
+                contact@chezmisou.com
+              </a>
+              <div className="flex items-center gap-4 mt-2">
+                <a
+                  href="#"
+                  aria-label="Suivez-nous sur Instagram"
+                  className="p-2 rounded-full bg-blanc-creme/10 hover:bg-orange/20 hover:text-orange transition-colors duration-200"
+                >
+                  <Instagram size={20} />
+                </a>
+                <a
+                  href="#"
+                  aria-label="Suivez-nous sur Facebook"
+                  className="p-2 rounded-full bg-blanc-creme/10 hover:bg-orange/20 hover:text-orange transition-colors duration-200"
+                >
+                  <Facebook size={20} />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Barre s\u00e9paratrice + mentions */}
+        <div className="border-t border-blanc-creme/15 mt-10 pt-8">
+          <p className="text-center text-sm text-blanc-creme/50">
+            &copy; 2026 Chez Misou &mdash; Manje Lakay. Tous droits r&eacute;serv&eacute;s.
+          </p>
+          <div className="flex items-center justify-center gap-4 mt-3 text-xs text-blanc-creme/40">
+            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Mentions l\u00e9gales">
+              Mentions l&eacute;gales
+            </a>
+            <span>&middot;</span>
+            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Conditions g\u00e9n\u00e9rales de vente">
+              CGV
+            </a>
+            <span>&middot;</span>
+            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Politique de confidentialit\u00e9">
+              Confidentialit&eacute;
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

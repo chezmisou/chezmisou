@@ -13,19 +13,19 @@
   }
 
   body {
-    @apply bg-[#FFFDF7] text-[#3B2314] font-body antialiased;
+    @apply bg-blanc text-marron-profond font-sans antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
+    @apply font-serif;
   }
 }
 
 @layer components {
   .btn-gold {
-    @apply bg-[#D4A017] text-white px-6 py-3 rounded-xl font-semibold
-           hover:bg-[#b8890f] transition-all duration-200 active:scale-95
-           focus:outline-none focus:ring-2 focus:ring-[#D4A017] focus:ring-offset-2;
+    @apply bg-orange text-white px-6 py-3 rounded-xl font-semibold
+           hover:bg-orange-vif transition-all duration-200 active:scale-95
+           focus:outline-none focus:ring-2 focus:ring-orange focus:ring-offset-2;
   }
 
   .btn-red {
@@ -42,11 +42,11 @@
 
 /* Toggle switch */
 .toggle-checkbox:checked {
-  @apply bg-[#D4A017];
+  @apply bg-orange;
 }
 
 .toggle-checkbox:checked + .toggle-label {
-  @apply bg-[#D4A017];
+  @apply bg-orange;
 }
 
 /* Custom scrollbar */
@@ -70,4 +70,13 @@
   --admin-border: #3d3028;
   --admin-text: #f5e6d3;
   --admin-muted: #a89080;
+}
+
+/* Bounce animation for scroll indicator */
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
 }
