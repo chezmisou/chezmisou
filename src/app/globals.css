@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --color-marron-profond: var(--marron-profond);
+  --color-marron: var(--marron);
+  --color-marron-clair: var(--marron-clair);
+  --color-marron-doux: var(--marron-doux);
+  --color-orange: var(--orange);
+  --color-orange-vif: var(--orange-vif);
+  --color-orange-clair: var(--orange-clair);
+  --color-jaune: var(--jaune);
+  --color-jaune-dore: var(--jaune-dore);
+  --color-jaune-clair: var(--jaune-clair);
+  --color-blanc: var(--blanc);
+  --color-blanc-creme: var(--blanc-creme);
+  --color-blanc-chaud: var(--blanc-chaud);
+  --color-gris-chaud: var(--gris-chaud);
+  --color-text-dark: var(--text-dark);
+  --color-text-body: var(--text-body);
+
+  --font-serif: var(--font-playfair), serif;
+  --font-sans: var(--font-dm-sans), sans-serif;
+}
+
+@layer base {
+  :root {
+    --marron-profond: #3B2314;
+    --marron: #6B3A2A;
+    --marron-clair: #8B5E3C;
+    --marron-doux: #A67C5B;
+    --orange: #D4762C;
+    --orange-vif: #E8872F;
+    --orange-clair: #F0A05C;
+    --jaune: #E8B84B;
+    --jaune-dore: #F2CA5E;
+    --jaune-clair: #F7DC8A;
+    --blanc: #FEFCF8;
+    --blanc-creme: #FFF8EE;
+    --blanc-chaud: #FFF3E0;
+    --gris-chaud: #9B8B7A;
+    --text-dark: #2A1810;
+    --text-body: #4A3728;
+  }
+
+  body {
+    font-family: var(--font-dm-sans), sans-serif;
+    color: var(--text-body);
+    background-color: var(--blanc);
+  }
+}
