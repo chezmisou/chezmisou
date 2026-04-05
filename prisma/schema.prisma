@@ -8,344 +8,340 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum Role {
-  CLIENT
-  ADMIN
-  SUPER_ADMIN
-  CHURCH_MANAGER
-}
-
-enum Category {
-  RIZ
-  SAUCES
-  VIANDES
-  BOISSONS
-  EPICES
-}
-
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PREPARING
-  READY
-  DELIVERED
-  CANCELLED
+enum UserRole {
+  customer
+  admin
 }
 
 enum OrderType {
-  TRAITEUR
-  EPICERIE_FINE
-  LUNCH_AFTER_CHURCH
+  epicerie
+  lac
 }
 
-enum DeliveryMethod {
-  DELIVERY
-  PICKUP
-}
-
-enum PaymentMethod {
-  CARD
-  CASH
+enum OrderStatus {
+  new
+  paid
+  preparing
+  shipped
+  delivered
+  cancelled
+  refunded
 }
 
 enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-  REFUNDED
+  pending
+  paid
+  failed
+  refunded
+}
+
+enum DeliveryMethod {
+  shipping
+  pickup
+  local_delivery
+}
+
+enum QuoteStatus {
+  new
+  in_progress
+  quote_sent
+  accepted
+  refused
 }
 
 enum DiscountType {
-  PERCENTAGE
-  FIXED
+  percentage
+  fixed_amount
 }
 
-model User {
-  id        String   @id @default(cuid())
-  name      String?
-  email     String   @unique
-  phone     String?
-  password  String?
-  role      Role     @default(CLIENT)
-  churchId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum PromoAppliesTo {
+  all
+  epicerie
+  lac
+  specific_products
+}
+
+model CustomerProfile {
+  id               String    @id @default(cuid())
+  userId           String?   @unique // lien vers Supabase Auth user (nullable pour invités)
+  email            String
+  firstName        String?
+  lastName         String?
+  phone            String?
+  defaultAddressId String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   addresses Address[]
   orders    Order[]
-  church    Church?   @relation(fields: [churchId], references: [id])
+  reviews   ProductReview[]
+  quotes    QuoteRequest[]
+  redemptions PromoCodeRedemption[]
+
+  @@index([email])
+  @@index([userId])
 }
 
 model Address {
-  id        String  @id @default(cuid())
-  userId    String
-  label     String?
-  street    String
-  city      String
-  state     String?
-  zipCode   String?
-  country   String  @default("Haiti")
-  isDefault Boolean @default(false)
+  id                String  @id @default(cuid())
+  customerProfileId String
+  line1             String
+  line2             String?
+  postalCode        String
+  city              String
+  country           String  @default("FR")
+  isDefault         Boolean @default(false)
+  createdAt         DateTime @default(now())
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
+  customer CustomerProfile @relation(fields: [customerProfileId], references: [id], onDelete: Cascade)
+  orders   Order[]
+
+  @@index([customerProfileId])
 }
 
 model Product {
   id          String   @id @default(cuid())
+  slug        String   @unique
   name        String
-  nameCreole  String
   description String
-  price       Float
-  image       String?
-  category    Category
-  available   Boolean  @default(true)
-  featured    Boolean  @default(false)
+  basePrice   Decimal  @db.Decimal(10, 2)
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  sizes           Size[]
-  orderItems      OrderItem[]
-  weeklyMenuItems WeeklyMenuItem[]
+  images     ProductImage[]
+  variants   ProductVariant[]
+  reviews    ProductReview[]
+  relatedFrom ProductRelated[] @relation("RelatedFrom")
+  relatedTo   ProductRelated[] @relation("RelatedTo")
+  promoCodes  PromoCodeProduct[]
 }
 
-model Size {
-  id              String @id @default(cuid())
-  label           String
-  labelCreole     String
-  servings        String
-  priceMultiplier Float  @default(1.0)
-  productId       String
+model ProductImage {
+  id        String @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  position  Int    @default(0)
 
-  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  orderItems OrderItem[]
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  name      String
+  price     Decimal @db.Decimal(10, 2)
+  stock     Int     @default(0)
+  sku       String? @unique
+  position  Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductReview {
+  id                String   @id @default(cuid())
+  productId         String
+  customerProfileId String
+  rating            Int
+  comment           String?
+  isApproved        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  product  Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer CustomerProfile @relation(fields: [customerProfileId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductRelated {
+  id              String @id @default(cuid())
+  productId       String
+  relatedProductId String
+  position        Int    @default(0)
+
+  product Product @relation("RelatedFrom", fields: [productId], references: [id], onDelete: Cascade)
+  related Product @relation("RelatedTo", fields: [relatedProductId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, relatedProductId])
+}
+
+model LacMenu {
+  id                String   @id @default(cuid())
+  serviceDate       DateTime
+  orderDeadline     DateTime
+  deliveryZoneText  String?
+  isPublished       Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  dishes LacDish[]
+
+  @@index([serviceDate])
+}
+
+model LacDish {
+  id          String  @id @default(cuid())
+  lacMenuId   String
+  name        String
+  description String?
+  photoUrl    String?
+  price       Decimal @db.Decimal(10, 2)
+  maxQuantity Int?
+  position    Int     @default(0)
+
+  menu LacMenu @relation(fields: [lacMenuId], references: [id], onDelete: Cascade)
+
+  @@index([lacMenuId])
+}
+
+model TraiteurDish {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  photoUrl    String?
+  category    String?
+  baseInfo    String?
+  isActive    Boolean @default(true)
+  position    Int     @default(0)
+  createdAt   DateTime @default(now())
+
+  formats TraiteurDishFormat[]
+}
+
+model TraiteurDishFormat {
+  id                       String  @id @default(cuid())
+  traiteurDishId           String
+  minPeople                Int
+  maxPeople                Int
+  indicativePricePerPerson Decimal @db.Decimal(10, 2)
+
+  dish TraiteurDish @relation(fields: [traiteurDishId], references: [id], onDelete: Cascade)
+
+  @@index([traiteurDishId])
 }
 
 model Order {
-  id              String         @id @default(cuid())
-  orderNumber     String         @unique @default("")
-  userId          String?
-  guestEmail      String?
-  guestPhone      String?
-  guestName       String?
-  status          OrderStatus    @default(PENDING)
-  type            OrderType      @default(TRAITEUR)
-  deliveryMethod  DeliveryMethod @default(DELIVERY)
-  deliveryAddress String?
-  addressId       String?
-  deliverySlot    String?
-  deliveryDate    DateTime?
-  guestCount      Int?
-  paymentMethod   PaymentMethod  @default(CARD)
-  paymentStatus   PaymentStatus  @default(PENDING)
-  stripePaymentId String?
-  promoCode       String?
-  subtotal        Float
-  deliveryFee     Float          @default(0)
-  discount        Float          @default(0)
-  total           Float
-  notes           String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id                String         @id @default(cuid())
+  orderNumber       String         @unique
+  type              OrderType
+  customerProfileId String?
+  guestEmail        String?
+  status            OrderStatus    @default(new)
+  subtotal          Decimal        @db.Decimal(10, 2)
+  shippingCost      Decimal        @default(0) @db.Decimal(10, 2)
+  discountAmount    Decimal        @default(0) @db.Decimal(10, 2)
+  total             Decimal        @db.Decimal(10, 2)
+  promoCodeId       String?
+  paymentProvider   String?
+  paymentStatus     PaymentStatus  @default(pending)
+  stripeSessionId   String?
+  deliveryMethod    DeliveryMethod
+  shippingAddressId String?
+  notes             String?
+  lacMenuId         String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
-  user          User?                @relation(fields: [userId], references: [id])
-  address       Address?             @relation(fields: [addressId], references: [id])
-  items         OrderItem[]
-  statusHistory OrderStatusHistory[]
-}
+  customer    CustomerProfile?      @relation(fields: [customerProfileId], references: [id])
+  address     Address?              @relation(fields: [shippingAddressId], references: [id])
+  promoCode   PromoCode?            @relation(fields: [promoCodeId], references: [id])
+  items       OrderItem[]
+  redemption  PromoCodeRedemption?
 
-model OrderStatusHistory {
-  id        String      @id @default(cuid())
-  orderId   String
-  status    OrderStatus
-  changedAt DateTime    @default(now())
-  changedBy String?
-
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  @@index([customerProfileId])
+  @@index([type, status])
 }
 
 model OrderItem {
-  id             String  @id @default(cuid())
-  orderId        String
-  productId      String
-  sizeId         String?
-  quantity       Int
-  customizations Json?
-  unitPrice      Float
-  totalPrice     Float
+  id               String @id @default(cuid())
+  orderId          String
+  itemType         String // 'product_variant' | 'lac_dish'
+  itemId           String
+  itemNameSnapshot String
+  itemPriceSnapshot Decimal @db.Decimal(10, 2)
+  quantity         Int
 
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
-  size    Size?   @relation(fields: [sizeId], references: [id])
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
 }
 
-model WeeklyMenu {
-  id            String   @id @default(cuid())
-  weekStartDate DateTime
-  active        Boolean  @default(true)
-  createdAt     DateTime @default(now())
+model QuoteRequest {
+  id                String      @id @default(cuid())
+  quoteNumber       String      @unique
+  customerProfileId String?
+  guestName         String
+  guestEmail        String
+  guestPhone        String?
+  eventDate         DateTime
+  eventType         String?
+  nbPeople          Int
+  eventLocation     String?
+  selectedDishes    Json
+  message           String?
+  status            QuoteStatus @default(new)
+  adminNotes        String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
-  items WeeklyMenuItem[]
+  customer CustomerProfile? @relation(fields: [customerProfileId], references: [id])
+
+  @@index([status])
 }
 
-model WeeklyMenuItem {
-  id           String  @id @default(cuid())
-  weeklyMenuId String
-  productId    String
-  maxQuantity  Int?
-  soldCount    Int     @default(0)
-  available    Boolean @default(true)
-
-  weeklyMenu WeeklyMenu @relation(fields: [weeklyMenuId], references: [id], onDelete: Cascade)
-  product    Product    @relation(fields: [productId], references: [id])
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 model PromoCode {
-  id            String       @id @default(cuid())
-  code          String       @unique
-  discountType  DiscountType
-  discountValue Float
-  validUntil    DateTime?
-  maxUses       Int?
-  currentUses   Int          @default(0)
-  active        Boolean      @default(true)
-  createdAt     DateTime     @default(now())
+  id                     String         @id @default(cuid())
+  code                   String         @unique
+  description            String?
+  discountType           DiscountType
+  discountValue          Decimal        @db.Decimal(10, 2)
+  minOrderAmount         Decimal?       @db.Decimal(10, 2)
+  appliesTo              PromoAppliesTo @default(all)
+  usageLimit             Int?
+  usageLimitPerCustomer  Int?
+  usedCount              Int            @default(0)
+  validFrom              DateTime?
+  validUntil             DateTime?
+  isActive               Boolean        @default(true)
+  createdAt              DateTime       @default(now())
+
+  products    PromoCodeProduct[]
+  redemptions PromoCodeRedemption[]
+  orders      Order[]
 }
 
-model SiteConfig {
-  id                  String @id @default(cuid())
-  minOrderAmount      Float  @default(10)
-  deliveryFee         Float  @default(5)
-  freeDeliveryMinimum Float  @default(50)
-  deliveryRadiusKm    Float  @default(15)
-  sundayDeadline      String @default("Saturday 20:00")
-  pickupAddress       String @default("")
-  pickupHours         String @default("")
+model PromoCodeProduct {
+  promoCodeId String
+  productId   String
+
+  promoCode PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([promoCodeId, productId])
 }
 
-// ==================== LAC (Lunch After Church) Models ====================
+model PromoCodeRedemption {
+  id                String   @id @default(cuid())
+  promoCodeId       String
+  orderId           String   @unique
+  customerProfileId String?
+  guestEmail        String?
+  discountAmount    Decimal  @db.Decimal(10, 2)
+  createdAt         DateTime @default(now())
 
-enum SlotStatus {
-  SCHEDULED
-  ACTIVE
-  COMPLETED
-  CANCELLED
-}
-
-enum RecurrenceFrequency {
-  WEEKLY
-  BIWEEKLY
-  MONTHLY_FIRST
-  MONTHLY_SECOND
-  MONTHLY_THIRD
-  MONTHLY_FOURTH
-  MONTHLY_LAST
-}
-
-model Church {
-  id           String   @id @default(cuid())
-  name         String
-  slug         String   @unique
-  contactName  String
-  contactEmail String
-  contactPhone String?
-  address      String?
-  city         String?
-  logoUrl      String?
-  color        String   @default("#6366f1")
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  accessSlots     AccessSlot[]
-  recurrenceRules RecurrenceRule[]
-  users           User[]
-}
-
-model AccessSlot {
-  id              String     @id @default(cuid())
-  churchId        String
-  date            DateTime
-  status          SlotStatus @default(SCHEDULED)
-  maxParticipants Int?
-  notes           String?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-
-  church Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
-
-  @@unique([churchId, date])
-}
-
-model RecurrenceRule {
-  id        String              @id @default(cuid())
-  churchId  String
-  frequency RecurrenceFrequency
-  isActive  Boolean             @default(true)
-  startDate DateTime
-  endDate   DateTime?
-  createdAt DateTime            @default(now())
-
-  church Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
-}
-
-model LacConfig {
-  id                    String  @id @default(cuid())
-  maxChurchesPerSunday  Int     @default(1)
-  defaultStartTime      String  @default("12:00")
-  defaultEndTime        String  @default("15:00")
-  reminderEmailsEnabled Boolean @default(true)
-  reminderDaysBefore    Int     @default(3)
-}
-
-// ==================== Épicerie Fine Models ====================
-
-enum EpicerieCategory {
-  EPIS
-  PIMENT
-  KREMAS
-}
-
-model EpicerieCategoryInfo {
-  id          String           @id @default(cuid())
-  key         EpicerieCategory @unique
-  labelFr     String
-  labelCr     String
-  accentColor String
-
-  products EpicerieProduct[]
-}
-
-model EpicerieProduct {
-  id          String           @id @default(cuid())
-  nameFr      String
-  nameCr      String
-  category    EpicerieCategory
-  size        String
-  price       Float
-  defaultPrice Float
-  image       String           @default("🫙")
-  isActive    Boolean          @default(true)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  categoryInfo EpicerieCategoryInfo @relation(fields: [category], references: [key])
-}
-
-// ==================== LAC Menu (migré depuis JSON vers DB) ====================
-
-model LacMenu {
-  id          String   @id @default(cuid())
-  key         String   @unique
-  type        String   // "menu" ou "supplement"
-  nom         String
-  description String?
-  prix        Float    @default(0)
-  devise      String   @default("HTG")
-  isActive    Boolean  @default(true) @map("is_active")
-  sortOrder   Int      @default(0) @map("sort_order")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@map("lac_menu")
+  promoCode PromoCode        @relation(fields: [promoCodeId], references: [id])
+  order     Order            @relation(fields: [orderId], references: [id])
+  customer  CustomerProfile? @relation(fields: [customerProfileId], references: [id])
 }

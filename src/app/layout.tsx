@@ -1,28 +1,42 @@
 import type { Metadata } from "next";
-import "@/styles/globals.css";
-import Header from "@/components/ui/Header";
-import Footer from "@/components/ui/Footer";
-import BottomNav from "@/components/ui/BottomNav";
+import localFont from "next/font/local";
+import "./globals.css";
+
+const playfair = localFont({
+  src: [
+    {
+      path: "../fonts/playfair-display-latin-wght-normal.woff2",
+      style: "normal",
+    },
+    {
+      path: "../fonts/playfair-display-latin-wght-italic.woff2",
+      style: "italic",
+    },
+  ],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const dmSans = localFont({
+  src: "../fonts/dm-sans-latin-wght-normal.woff2",
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Chez Misou — Lakay ou, nan chak bouch",
+  title: "Chez Misou · Manje Lakay",
   description:
-    "Saveurs authentiques d'Haïti. Traiteur, Lunch After Church, Épicerie Fine — préparées avec amour.",
+    "Produits haïtiens authentiques : épicerie fine, traiteur et service LAC pour la diaspora en France.",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="fr">
-      <body className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <BottomNav />
-      </body>
+    <html lang="fr" className={`${playfair.variable} ${dmSans.variable}`}>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
