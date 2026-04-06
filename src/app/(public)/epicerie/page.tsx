@@ -1,35 +1,54 @@
+import { prisma } from "@/lib/prisma";
+import ProductCard from "@/components/public/ProductCard";
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "L’épicerie fine",
+  title: "L'épicerie fine",
   description:
-    "Bientôt, notre sélection de produits authentiques haïtiens. Épices, piments, confitures et krémas.",
+    "Les saveurs d'Haïti livrées chez vous. Krémas, pikliz, épices, café et plus encore.",
 };
 
-export default function EpiceriePage() {
+export default async function EpiceriePage() {
+  const products = await prisma.product.findMany({
+    where: { isActive: true },
+    include: {
+      images: { orderBy: { position: "asc" }, take: 1 },
+      variants: { orderBy: { position: "asc" } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
-    <section className="min-h-[70vh] flex items-center justify-center bg-gradient-to-br from-blanc-creme via-blanc-chaud to-jaune-clair/20 px-4">
-      <div className="max-w-2xl text-center">
-        <p className="text-xs uppercase tracking-[0.25em] text-orange font-sans font-medium mb-6">
-          Bient&ocirc;t disponible
+    <>
+      {/* Hero */}
+      <section className="flex items-center justify-center bg-blanc-creme min-h-[50vh] px-6 text-center">
+        <div>
+          <h1 className="font-serif text-5xl md:text-7xl text-marron-profond mb-4">
+            L&rsquo;&eacute;picerie fine
+          </h1>
+          <p className="font-sans text-lg md:text-xl text-text-body max-w-xl mx-auto">
+            Les saveurs d&rsquo;Ha&iuml;ti livr&eacute;es chez vous.
+          </p>
+        </div>
+      </section>
+
+      {/* Product grid */}
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+
+      {/* Shipping banner */}
+      <section className="bg-marron-profond text-blanc-creme py-6 text-center">
+        <p className="font-sans text-sm md:text-base">
+          Livraison en France m&eacute;tropolitaine &middot; 6,90&nbsp;&euro; &middot; Offerte d&egrave;s 60&nbsp;&euro; d&rsquo;achat
         </p>
-        <h1 className="font-serif text-4xl md:text-6xl font-bold text-marron-profond mb-6">
-          L&rsquo;&eacute;picerie fine
-        </h1>
-        <p className="text-lg md:text-xl text-text-body font-sans leading-relaxed max-w-lg mx-auto">
-          Bient&ocirc;t, notre s&eacute;lection de produits authentiques ha&iuml;tiens.
-        </p>
-        <Link
-          href="/"
-          className="mt-10 inline-flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-marron-profond text-marron-profond font-sans font-semibold hover:bg-marron-profond hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-marron-profond focus:ring-offset-2"
-          aria-label="Retour à l’accueil"
-        >
-          <ArrowLeft size={18} aria-hidden="true" />
-          Retour à l&rsquo;accueil
-        </Link>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
