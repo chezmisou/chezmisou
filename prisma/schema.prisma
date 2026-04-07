@@ -64,7 +64,7 @@ enum PromoAppliesTo {
 model CustomerProfile {
   id               String    @id @default(cuid())
   userId           String?   @unique // lien vers Supabase Auth user (nullable pour invités)
-  email            String
+  email            String    @unique
   firstName        String?
   lastName         String?
   phone            String?
@@ -78,7 +78,6 @@ model CustomerProfile {
   quotes    QuoteRequest[]
   redemptions PromoCodeRedemption[]
 
-  @@index([email])
   @@index([userId])
 }
 
@@ -240,7 +239,7 @@ model Order {
   promoCodeId       String?
   paymentProvider   String?
   paymentStatus     PaymentStatus  @default(pending)
-  stripeSessionId   String?
+  stripeSessionId   String?        @unique
   deliveryMethod    DeliveryMethod
   shippingAddressId String?
   notes             String?

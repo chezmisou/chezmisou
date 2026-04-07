@@ -159,9 +159,9 @@ export default function CartDrawer() {
                 : "Frais de port calculés à l'étape suivante"}
             </p>
             <Link
-              href="/panier-epicerie"
+              href="/checkout/epicerie"
               onClick={closeCart}
-              className="block w-full py-3 rounded-xl bg-marron-profond text-blanc-creme font-semibold text-center hover:bg-marron transition-colors"
+              className="block w-full py-3 rounded-xl bg-orange text-blanc font-semibold text-center hover:bg-orange-vif transition-colors"
             >
               Passer commande
             </Link>
