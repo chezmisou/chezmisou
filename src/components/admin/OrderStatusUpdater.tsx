@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const allStatuses = [
   { value: "new", label: "Nouvelle" },
@@ -21,14 +22,12 @@ interface Props {
 export default function OrderStatusUpdater({ orderId, currentStatus }: Props) {
   const [status, setStatus] = useState(currentStatus);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
   const router = useRouter();
 
   const handleUpdate = async () => {
     if (status === currentStatus) return;
 
     setSaving(true);
-    setMessage("");
     try {
       const res = await fetch(`/api/admin/commandes/${orderId}/status`, {
         method: "PATCH",
@@ -38,14 +37,30 @@ export default function OrderStatusUpdater({ orderId, currentStatus }: Props) {
 
       if (!res.ok) {
         const data = await res.json();
-        setMessage(data.error || "Erreur lors de la mise à jour");
+        toast.error(data.error || "Erreur lors de la mise à jour");
         return;
       }
 
-      setMessage("Statut mis à jour");
+      const data = await res.json();
+
+      if (data.emailSent) {
+        toast.success(
+          "Statut mis à jour. Email de notification envoyé au client."
+        );
+      } else if (data.emailSent === false && status !== "new") {
+        toast.warning(
+          "Statut mis à jour mais l'email n'a pas pu être envoyé au client.",
+          {
+            description: data.emailError || undefined,
+          }
+        );
+      } else {
+        toast.success("Statut mis à jour.");
+      }
+
       router.refresh();
     } catch {
-      setMessage("Erreur lors de la mise à jour");
+      toast.error("Erreur lors de la mise à jour");
     } finally {
       setSaving(false);
     }
@@ -73,13 +88,6 @@ export default function OrderStatusUpdater({ orderId, currentStatus }: Props) {
           {saving ? "Mise à jour…" : "Mettre à jour"}
         </button>
       </div>
-      {message && (
-        <p
-          className={`text-sm ${message.includes("Erreur") ? "text-red-600" : "text-green-600"}`}
-        >
-          {message}
-        </p>
-      )}
     </div>
   );
 }

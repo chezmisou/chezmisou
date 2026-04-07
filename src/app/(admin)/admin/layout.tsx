@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import { Toaster } from "sonner";
 
 export const metadata = {
   title: "Admin — Chez Misou",
@@ -35,6 +36,7 @@ export default async function AdminLayout({
       <main className="flex-1 lg:ml-64 p-6 lg:p-10 pt-20 lg:pt-10">
         {children}
       </main>
+      <Toaster richColors position="top-right" />
     </div>
   );
 }

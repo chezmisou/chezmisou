@@ -28,12 +28,12 @@ const navItems = [
   },
   { href: "/admin/produits", label: "Produits", icon: Package },
   { href: "/admin/commandes", label: "Commandes", icon: ShoppingCart },
+  { href: "/admin/clients", label: "Clients", icon: Users },
 ];
 
 const futureItems = [
   { label: "Menus LAC", icon: UtensilsCrossed },
   { label: "Devis traiteur", icon: FileText },
-  { label: "Clients", icon: Users },
   { label: "Codes promo", icon: Tag },
   { label: "Paramètres", icon: Settings },
 ];
