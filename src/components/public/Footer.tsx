@@ -49,6 +49,13 @@ export default function Footer() {
                   {link.label}
                 </Link>
               ))}
+              <Link
+                href="/mes-commandes"
+                aria-label="Mes commandes"
+                className="text-sm text-blanc-creme/70 hover:text-orange transition-colors duration-200"
+              >
+                Mes commandes
+              </Link>
             </nav>
           </div>
 
