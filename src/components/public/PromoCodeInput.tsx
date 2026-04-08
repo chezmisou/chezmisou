@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Loader2, Tag, X } from "lucide-react";
 
 interface PromoItem {
@@ -44,8 +44,7 @@ export default function PromoCodeInput({
   const [error, setError] = useState("");
   const [applied, setApplied] = useState<AppliedPromo | null>(null);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleApply() {
     if (!code.trim()) return;
 
     setLoading(true);
@@ -112,7 +111,7 @@ export default function PromoCodeInput({
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <div className="flex gap-2">
         <input
           type="text"
           value={code}
@@ -124,7 +123,8 @@ export default function PromoCodeInput({
           placeholder="Code promo"
         />
         <button
-          type="submit"
+          type="button"
+          onClick={handleApply}
           disabled={loading || !code.trim()}
           className="px-4 py-2.5 rounded-xl bg-marron-profond text-blanc text-sm font-semibold hover:bg-marron transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
         >
@@ -134,7 +134,7 @@ export default function PromoCodeInput({
             "Appliquer"
           )}
         </button>
-      </form>
+      </div>
       {error && (
         <p className="text-red-500 text-xs mt-1.5">{error}</p>
       )}
