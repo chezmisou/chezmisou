@@ -8,7 +8,7 @@ import {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  UtensilsCrossed,
+  Sunrise,
   FileText,
   Users,
   Tag,
@@ -29,10 +29,10 @@ const navItems = [
   { href: "/admin/produits", label: "Produits", icon: Package },
   { href: "/admin/commandes", label: "Commandes", icon: ShoppingCart },
   { href: "/admin/clients", label: "Clients", icon: Users },
+  { href: "/admin/lac", label: "Menus LAC", icon: Sunrise },
 ];
 
 const futureItems = [
-  { label: "Menus LAC", icon: UtensilsCrossed },
   { label: "Devis traiteur", icon: FileText },
   { label: "Codes promo", icon: Tag },
   { label: "Paramètres", icon: Settings },
