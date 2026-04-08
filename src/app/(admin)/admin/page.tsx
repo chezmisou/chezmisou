@@ -33,10 +33,11 @@ export default async function AdminDashboard() {
     ordersToday,
     revenueResult,
     revenueTodayResult,
-    activeProducts,
+    _activeProducts,
     lowStockVariants,
     recentOrders,
     upcomingLacMenu,
+    pendingQuotes,
   ] = await Promise.all([
     prisma.order.count(),
     prisma.order.count({
@@ -63,6 +64,9 @@ export default async function AdminDashboard() {
     prisma.lacMenu.findFirst({
       where: { isPublished: true, serviceDate: { gte: new Date() } },
       orderBy: { serviceDate: "asc" },
+    }),
+    prisma.quoteRequest.count({
+      where: { status: { in: ["new", "in_progress"] } },
     }),
   ]);
 
@@ -95,6 +99,12 @@ export default async function AdminDashboard() {
       value: lowStockVariants,
       alert: lowStockVariants > 0,
     },
+    {
+      label: "Devis en attente",
+      value: pendingQuotes,
+      alert: pendingQuotes > 0,
+      link: "/admin/devis?status=new",
+    },
   ];
 
   return (
@@ -107,7 +117,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
         {stats.map((stat) => (
           <div
             key={stat.label}
@@ -125,6 +135,14 @@ export default async function AdminDashboard() {
             </p>
             {stat.sub && (
               <p className="text-text-body text-sm mt-1">{stat.sub}</p>
+            )}
+            {stat.link && (
+              <Link
+                href={stat.link}
+                className="text-orange hover:underline text-xs mt-2 inline-block"
+              >
+                Voir l&apos;inbox
+              </Link>
             )}
           </div>
         ))}

@@ -158,6 +158,86 @@ async function main() {
     console.log(`  ✅ Product: ${prod.name}`);
   }
 
+  // ─── Catalogue Traiteur ────────────────────────────────────────────────
+  const traiteurDishes = [
+    {
+      name: "Griot traditionnel",
+      category: "Plat principal",
+      description:
+        "Le plat national haïtien par excellence. Viande de porc marinée aux agrumes et épices, puis frite jusqu'à tendreté parfaite. Accompagné de pikliz maison et de bananes pésées.",
+      baseInfo: "Servi avec pikliz et bananes pésées",
+      photoUrl:
+        "https://placehold.co/800x800/F0A05C/3B2314?font=playfair&text=Griot",
+      formats: [
+        { minPeople: 5, maxPeople: 9, indicativePricePerPerson: 18.0 },
+        { minPeople: 10, maxPeople: 19, indicativePricePerPerson: 15.0 },
+        { minPeople: 20, maxPeople: 50, indicativePricePerPerson: 12.0 },
+      ],
+    },
+    {
+      name: "Poulet créole",
+      category: "Plat principal",
+      description:
+        "Poulet mijoté dans une sauce créole riche en saveurs — tomate, piment, thym, ail et oignon. Un classique réconfortant et généreux.",
+      baseInfo: "Servi avec riz djôn djôn ou riz blanc",
+      photoUrl:
+        "https://placehold.co/800x800/F0A05C/3B2314?font=playfair&text=Poulet+cr%C3%A9ole",
+      formats: [
+        { minPeople: 5, maxPeople: 9, indicativePricePerPerson: 16.0 },
+        { minPeople: 10, maxPeople: 19, indicativePricePerPerson: 13.0 },
+        { minPeople: 20, maxPeople: 50, indicativePricePerPerson: 11.0 },
+      ],
+    },
+    {
+      name: "Riz djôn djôn",
+      category: "Accompagnement",
+      description:
+        "Le riz emblématique d'Haïti, cuisiné avec des champignons noirs séchés (djôn djôn) qui lui donnent sa couleur profonde et son goût unique.",
+      baseInfo: null,
+      photoUrl:
+        "https://placehold.co/800x800/F0A05C/3B2314?font=playfair&text=Riz+dj%C3%B4n+dj%C3%B4n",
+      formats: [
+        { minPeople: 5, maxPeople: 9, indicativePricePerPerson: 7.0 },
+        { minPeople: 10, maxPeople: 50, indicativePricePerPerson: 5.5 },
+      ],
+    },
+    {
+      name: "Plateau de douceurs haïtiennes",
+      category: "Dessert",
+      description:
+        "Un assortiment généreux de douceurs typiques : tablette pistache, pain patate, blan mangé et pâte de goyave. Pour clôturer vos événements sur une note sucrée et authentique.",
+      baseInfo: null,
+      photoUrl:
+        "https://placehold.co/800x800/F0A05C/3B2314?font=playfair&text=Douceurs",
+      formats: [
+        { minPeople: 5, maxPeople: 15, indicativePricePerPerson: 8.0 },
+        { minPeople: 16, maxPeople: 50, indicativePricePerPerson: 6.5 },
+      ],
+    },
+  ];
+
+  // Clean existing traiteur dishes for idempotency
+  await prisma.traiteurDishFormat.deleteMany({});
+  await prisma.traiteurDish.deleteMany({});
+
+  for (const dish of traiteurDishes) {
+    await prisma.traiteurDish.create({
+      data: {
+        name: dish.name,
+        category: dish.category,
+        description: dish.description,
+        baseInfo: dish.baseInfo,
+        photoUrl: dish.photoUrl,
+        isActive: true,
+        position: traiteurDishes.indexOf(dish),
+        formats: {
+          create: dish.formats,
+        },
+      },
+    });
+    console.log(`  ✅ Traiteur dish: ${dish.name}`);
+  }
+
   console.log("\nSeed completed.");
 }
 

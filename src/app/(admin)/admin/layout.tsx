@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Toaster } from "sonner";
 
@@ -30,9 +31,13 @@ export default async function AdminLayout({
     redirect("/admin/login?error=unauthorized");
   }
 
+  const newQuoteCount = await prisma.quoteRequest.count({
+    where: { status: "new" },
+  });
+
   return (
     <div className="min-h-screen flex bg-blanc-creme">
-      <AdminSidebar userEmail={user.email!} />
+      <AdminSidebar userEmail={user.email!} newQuoteCount={newQuoteCount} />
       <main className="flex-1 lg:ml-64 p-6 lg:p-10 pt-20 lg:pt-10">
         {children}
       </main>

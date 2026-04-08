@@ -9,6 +9,7 @@ import {
   Package,
   ShoppingCart,
   Sunrise,
+  UtensilsCrossed,
   FileText,
   Users,
   Tag,
@@ -30,15 +31,22 @@ const navItems = [
   { href: "/admin/commandes", label: "Commandes", icon: ShoppingCart },
   { href: "/admin/clients", label: "Clients", icon: Users },
   { href: "/admin/lac", label: "Menus LAC", icon: Sunrise },
+  { href: "/admin/traiteur", label: "Plats traiteur", icon: UtensilsCrossed },
+  { href: "/admin/devis", label: "Demandes de devis", icon: FileText },
 ];
 
 const futureItems = [
-  { label: "Devis traiteur", icon: FileText },
   { label: "Codes promo", icon: Tag },
   { label: "Paramètres", icon: Settings },
 ];
 
-export default function AdminSidebar({ userEmail }: { userEmail: string }) {
+export default function AdminSidebar({
+  userEmail,
+  newQuoteCount = 0,
+}: {
+  userEmail: string;
+  newQuoteCount?: number;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -80,6 +88,7 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href, item.exact);
+          const showBadge = item.href === "/admin/devis" && newQuoteCount > 0;
           return (
             <Link
               key={item.href}
@@ -93,6 +102,11 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
             >
               <Icon size={20} />
               <span>{item.label}</span>
+              {showBadge && (
+                <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                  {newQuoteCount}
+                </span>
+              )}
             </Link>
           );
         })}
