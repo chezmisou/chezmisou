@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CartButton from "@/components/public/CartButton";
+import LacCartButton from "@/components/public/LacCartButton";
 
 const navLinks = [
   { label: "Chez Misou", href: "/", ariaLabel: "Accueil Chez Misou" },
@@ -76,8 +77,9 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {/* Cart button */}
+          {/* Cart buttons */}
           <CartButton />
+          <LacCartButton />
 
           {/* Mobile hamburger */}
           <button
