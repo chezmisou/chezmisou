@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { ArrowLeft, Loader2, Lock } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/lib/cart/CartContext";
+import PromoCodeInput from "@/components/public/PromoCodeInput";
 
 const COUNTRIES = [
   { code: "FR", label: "France" },
@@ -12,8 +13,8 @@ const COUNTRIES = [
   { code: "CH", label: "Suisse" },
 ];
 
-const SHIPPING_COST = 6.9;
-const FREE_SHIPPING_THRESHOLD = 60;
+const DEFAULT_SHIPPING_COST = 6.9;
+const DEFAULT_FREE_SHIPPING_THRESHOLD = 60;
 
 interface FormData {
   email: string;
@@ -56,10 +57,32 @@ export default function CheckoutEpiceriePage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    promoCodeId: string;
+    discountAmount: number;
+  } | null>(null);
+
+  // Load dynamic settings
+  const [shippingCostSetting, setShippingCostSetting] = useState(DEFAULT_SHIPPING_COST);
+  const [freeThresholdSetting, setFreeThresholdSetting] = useState(DEFAULT_FREE_SHIPPING_THRESHOLD);
+
+  useEffect(() => {
+    fetch("/api/settings/shipping")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          if (data.shippingCost != null) setShippingCostSetting(data.shippingCost);
+          if (data.freeThreshold != null) setFreeThresholdSetting(data.freeThreshold);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const shippingCost =
-    subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-  const total = subtotal + shippingCost;
+    subtotal >= freeThresholdSetting ? 0 : shippingCostSetting;
+  const discountAmount = appliedPromo?.discountAmount ?? 0;
+  const total = subtotal + shippingCost - discountAmount;
 
   if (items.length === 0) {
     return (
@@ -121,6 +144,7 @@ export default function CheckoutEpiceriePage() {
           country: form.country,
         },
         notes: form.notes,
+        ...(appliedPromo ? { promoCodeId: appliedPromo.promoCodeId } : {}),
       };
 
       const res = await fetch("/api/checkout/epicerie", {
@@ -423,6 +447,23 @@ export default function CheckoutEpiceriePage() {
                 ))}
               </div>
 
+              {/* Promo code */}
+              <div className="mb-5">
+                <PromoCodeInput
+                  type="epicerie"
+                  items={items.map((item) => ({
+                    variantId: item.variantId,
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    price: item.price,
+                  }))}
+                  subtotal={subtotal}
+                  customerEmail={form.email || undefined}
+                  onApply={(result) => setAppliedPromo(result)}
+                  onRemove={() => setAppliedPromo(null)}
+                />
+              </div>
+
               <div className="border-t border-marron-profond/10 pt-4 space-y-2 font-sans">
                 <div className="flex justify-between text-sm text-text-body">
                   <span>Sous-total</span>
@@ -440,6 +481,12 @@ export default function CheckoutEpiceriePage() {
                       : priceFormatter.format(shippingCost)}
                   </span>
                 </div>
+                {appliedPromo && (
+                  <div className="flex justify-between text-sm text-green-600 font-semibold">
+                    <span>Remise ({appliedPromo.code})</span>
+                    <span>–{priceFormatter.format(appliedPromo.discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-lg font-bold pt-2 border-t border-marron-profond/10">
                   <span className="text-marron-profond">Total</span>
                   <span className="text-orange">

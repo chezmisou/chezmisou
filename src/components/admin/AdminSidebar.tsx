@@ -33,11 +33,8 @@ const navItems = [
   { href: "/admin/lac", label: "Menus LAC", icon: Sunrise },
   { href: "/admin/traiteur", label: "Plats traiteur", icon: UtensilsCrossed },
   { href: "/admin/devis", label: "Demandes de devis", icon: FileText },
-];
-
-const futureItems = [
-  { label: "Codes promo", icon: Tag },
-  { label: "Paramètres", icon: Settings },
+  { href: "/admin/promos", label: "Codes promo", icon: Tag },
+  { href: "/admin/parametres", label: "Paramètres", icon: Settings },
 ];
 
 export default function AdminSidebar({
@@ -111,27 +108,6 @@ export default function AdminSidebar({
           );
         })}
 
-        <div className="pt-4 pb-2 px-3">
-          <span className="text-xs uppercase tracking-widest text-blanc-creme/40">
-            Bientôt
-          </span>
-        </div>
-
-        {futureItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={item.label}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-blanc-creme/30 cursor-not-allowed"
-            >
-              <Icon size={20} />
-              <span>{item.label}</span>
-              <span className="ml-auto text-[10px] bg-blanc-creme/10 px-2 py-0.5 rounded-full">
-                Bientôt
-              </span>
-            </div>
-          );
-        })}
       </nav>
 
       {/* User / logout */}

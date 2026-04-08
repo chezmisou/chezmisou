@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/public/ProductCard";
+import { getNumberSetting, SETTING_KEYS } from "@/lib/settings";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -11,14 +12,21 @@ export const metadata: Metadata = {
 };
 
 export default async function EpiceriePage() {
-  const products = await prisma.product.findMany({
-    where: { isActive: true },
-    include: {
-      images: { orderBy: { position: "asc" }, take: 1 },
-      variants: { orderBy: { position: "asc" } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const [products, shippingCost, freeThreshold] = await Promise.all([
+    prisma.product.findMany({
+      where: { isActive: true },
+      include: {
+        images: { orderBy: { position: "asc" }, take: 1 },
+        variants: { orderBy: { position: "asc" } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    getNumberSetting(SETTING_KEYS.SHIPPING_COST_FRANCE.key, SETTING_KEYS.SHIPPING_COST_FRANCE.default),
+    getNumberSetting(SETTING_KEYS.FREE_SHIPPING_THRESHOLD.key, SETTING_KEYS.FREE_SHIPPING_THRESHOLD.default),
+  ]);
+
+  const shippingLabel = shippingCost.toFixed(2).replace(".", ",");
+  const thresholdLabel = freeThreshold % 1 === 0 ? String(freeThreshold) : freeThreshold.toFixed(2).replace(".", ",");
 
   return (
     <>
@@ -46,7 +54,7 @@ export default async function EpiceriePage() {
       {/* Shipping banner */}
       <section className="bg-marron-profond text-blanc-creme py-6 text-center">
         <p className="font-sans text-sm md:text-base">
-          Livraison en France m&eacute;tropolitaine &middot; 6,90&nbsp;&euro; &middot; Offerte d&egrave;s 60&nbsp;&euro; d&rsquo;achat
+          Livraison en France m&eacute;tropolitaine &middot; {shippingLabel}&nbsp;&euro; &middot; Offerte d&egrave;s {thresholdLabel}&nbsp;&euro; d&rsquo;achat
         </p>
       </section>
     </>

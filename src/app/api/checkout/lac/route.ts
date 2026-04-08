@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe-server";
 import { prisma } from "@/lib/prisma";
+import { getNumberSetting, SETTING_KEYS } from "@/lib/settings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ interface CheckoutBody {
   } | null;
   instructions?: string;
   notes?: string;
+  promoCodeId?: string;
 }
 
 function formatDateFr(date: Date): string {
@@ -42,7 +44,7 @@ function formatDateFr(date: Date): string {
 export async function POST(req: NextRequest) {
   try {
     const body: CheckoutBody = await req.json();
-    const { lacMenuId, items, deliveryMethod, customer, address, instructions, notes } = body;
+    const { lacMenuId, items, deliveryMethod, customer, address, instructions, notes, promoCodeId } = body;
 
     // --- Validation ---
     if (!lacMenuId) {
@@ -149,6 +151,72 @@ export async function POST(req: NextRequest) {
       };
     });
 
+    // --- Read dynamic settings ---
+    const lacDeliveryFee = await getNumberSetting(
+      SETTING_KEYS.LAC_DELIVERY_FEE.key,
+      SETTING_KEYS.LAC_DELIVERY_FEE.default
+    );
+    const deliveryFeeCents = Math.round(lacDeliveryFee * 100);
+
+    // --- Calculate subtotal ---
+    const subtotalCents = lineItems.reduce(
+      (sum, li) => sum + li.price_data.unit_amount * li.quantity,
+      0
+    );
+    const subtotalEuros = subtotalCents / 100;
+
+    // --- Promo code server-side re-validation ---
+    let discountAmountCents = 0;
+    let validatedPromoCode: { id: string; code: string } | null = null;
+
+    if (promoCodeId) {
+      const promo = await prisma.promoCode.findUnique({
+        where: { id: promoCodeId },
+        include: { products: true },
+      });
+
+      if (!promo || !promo.isActive) {
+        return NextResponse.json({ error: "Code promo invalide ou désactivé" }, { status: 400 });
+      }
+      if (promo.validFrom && new Date() < promo.validFrom) {
+        return NextResponse.json({ error: "Ce code promo n'est pas encore valide" }, { status: 400 });
+      }
+      if (promo.validUntil && new Date() > promo.validUntil) {
+        return NextResponse.json({ error: "Ce code promo a expiré" }, { status: 400 });
+      }
+      if (promo.appliesTo !== "all" && promo.appliesTo !== "lac") {
+        return NextResponse.json({ error: "Ce code promo ne s'applique pas au menu LAC" }, { status: 400 });
+      }
+      if (promo.minOrderAmount && subtotalEuros < Number(promo.minOrderAmount)) {
+        return NextResponse.json(
+          { error: `Commande minimum de ${Number(promo.minOrderAmount).toFixed(2)} € requise pour ce code` },
+          { status: 400 }
+        );
+      }
+      if (promo.usageLimit && promo.usedCount >= promo.usageLimit) {
+        return NextResponse.json({ error: "Ce code promo a atteint son nombre maximal d'utilisations" }, { status: 400 });
+      }
+      if (promo.usageLimitPerCustomer && customer.email) {
+        const customerRedemptions = await prisma.promoCodeRedemption.count({
+          where: {
+            promoCodeId: promo.id,
+            OR: [{ guestEmail: customer.email.toLowerCase() }, { customer: { email: customer.email.toLowerCase() } }],
+          },
+        });
+        if (customerRedemptions >= promo.usageLimitPerCustomer) {
+          return NextResponse.json({ error: "Vous avez déjà utilisé ce code promo le nombre maximal de fois" }, { status: 400 });
+        }
+      }
+
+      if (promo.discountType === "percentage") {
+        discountAmountCents = Math.round(subtotalCents * (Number(promo.discountValue) / 100));
+      } else {
+        discountAmountCents = Math.min(Math.round(Number(promo.discountValue) * 100), subtotalCents);
+      }
+
+      validatedPromoCode = { id: promo.id, code: promo.code };
+    }
+
     // --- Shipping options ---
     const shippingOptions =
       deliveryMethod === "local_delivery"
@@ -156,7 +224,7 @@ export async function POST(req: NextRequest) {
             {
               shipping_rate_data: {
                 type: "fixed_amount" as const,
-                fixed_amount: { amount: 500, currency: "eur" },
+                fixed_amount: { amount: deliveryFeeCents, currency: "eur" },
                 display_name: "Livraison locale",
               },
             },
@@ -176,12 +244,25 @@ export async function POST(req: NextRequest) {
       items.map((i) => ({ lacDishId: i.lacDishId, quantity: i.quantity }))
     );
 
+    // --- Create Stripe Coupon if promo applied ---
+    const discounts: { coupon: string }[] = [];
+    if (validatedPromoCode && discountAmountCents > 0) {
+      const coupon = await stripe.coupons.create({
+        amount_off: discountAmountCents,
+        currency: "eur",
+        duration: "once",
+        name: `Code ${validatedPromoCode.code}`,
+      });
+      discounts.push({ coupon: coupon.id });
+    }
+
     // --- Create Stripe Checkout Session ---
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       line_items: lineItems,
       shipping_options: shippingOptions,
+      ...(discounts.length > 0 ? { discounts } : {}),
       customer_email: customer.email,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/lac/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/lac`,
@@ -200,6 +281,12 @@ export async function POST(req: NextRequest) {
         delivery_instructions: instructions || "",
         notes: notes || "",
         items_json: itemsJson,
+        ...(validatedPromoCode
+          ? {
+              promo_code_id: validatedPromoCode.id,
+              discount_amount: (discountAmountCents / 100).toFixed(2),
+            }
+          : {}),
       },
     });
 

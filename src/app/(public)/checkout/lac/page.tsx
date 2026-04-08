@@ -4,13 +4,14 @@ import { useState, useEffect, type FormEvent } from "react";
 import { ArrowLeft, Loader2, Lock, MapPin, Truck } from "lucide-react";
 import Link from "next/link";
 import { useLacCart } from "@/lib/cart/LacCartContext";
+import PromoCodeInput from "@/components/public/PromoCodeInput";
 
 const priceFormatter = new Intl.NumberFormat("fr-FR", {
   style: "currency",
   currency: "EUR",
 });
 
-const DELIVERY_FEE = 5;
+const DEFAULT_DELIVERY_FEE = 5;
 
 interface MenuInfo {
   serviceDate: string;
@@ -59,9 +60,27 @@ export default function CheckoutLacPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    promoCodeId: string;
+    discountAmount: number;
+  } | null>(null);
 
-  const shippingCost = deliveryMethod === "local_delivery" ? DELIVERY_FEE : 0;
-  const total = subtotal + shippingCost;
+  // Load dynamic delivery fee
+  const [deliveryFeeSetting, setDeliveryFeeSetting] = useState(DEFAULT_DELIVERY_FEE);
+
+  useEffect(() => {
+    fetch("/api/settings/shipping")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.lacDeliveryFee != null) setDeliveryFeeSetting(data.lacDeliveryFee);
+      })
+      .catch(() => {});
+  }, []);
+
+  const shippingCost = deliveryMethod === "local_delivery" ? deliveryFeeSetting : 0;
+  const discountAmount = appliedPromo?.discountAmount ?? 0;
+  const total = subtotal + shippingCost - discountAmount;
 
   // Fetch menu info on mount to check deadline
   useEffect(() => {
@@ -189,6 +208,7 @@ export default function CheckoutLacPage() {
             : null,
         instructions: form.instructions,
         notes: form.notes,
+        ...(appliedPromo ? { promoCodeId: appliedPromo.promoCodeId } : {}),
       };
 
       const res = await fetch("/api/checkout/lac", {
@@ -305,7 +325,7 @@ export default function CheckoutLacPage() {
                     Livraison locale
                   </span>
                   <span className="font-sans text-xs text-text-body">
-                    Livraison à domicile le dimanche matin (+{priceFormatter.format(DELIVERY_FEE)}).
+                    Livraison à domicile le dimanche matin (+{priceFormatter.format(deliveryFeeSetting)}).
                   </span>
                 </button>
               </div>
@@ -564,6 +584,22 @@ export default function CheckoutLacPage() {
                 ))}
               </div>
 
+              {/* Promo code */}
+              <div className="mb-5">
+                <PromoCodeInput
+                  type="lac"
+                  items={items.map((item) => ({
+                    lacDishId: item.lacDishId,
+                    quantity: item.quantity,
+                    price: item.price,
+                  }))}
+                  subtotal={subtotal}
+                  customerEmail={form.email || undefined}
+                  onApply={(result) => setAppliedPromo(result)}
+                  onRemove={() => setAppliedPromo(null)}
+                />
+              </div>
+
               <div className="border-t border-marron-profond/10 pt-4 space-y-2 font-sans">
                 <div className="flex justify-between text-sm text-text-body">
                   <span>Sous-total</span>
@@ -577,6 +613,12 @@ export default function CheckoutLacPage() {
                       : priceFormatter.format(shippingCost)}
                   </span>
                 </div>
+                {appliedPromo && (
+                  <div className="flex justify-between text-sm text-green-600 font-semibold">
+                    <span>Remise ({appliedPromo.code})</span>
+                    <span>–{priceFormatter.format(appliedPromo.discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-lg font-bold pt-2 border-t border-marron-profond/10">
                   <span className="text-marron-profond">Total</span>
                   <span className="text-orange">

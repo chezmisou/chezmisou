@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 
+export async function GET() {
+  const { error } = await requireAdmin();
+  if (error) return error;
+
+  const products = await prisma.product.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+
+  return NextResponse.json(products);
+}
+
 export async function POST(req: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;

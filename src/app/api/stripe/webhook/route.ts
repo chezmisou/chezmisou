@@ -7,6 +7,7 @@ import { render } from "@react-email/render";
 import { OrderConfirmationEpicerie } from "@/lib/emails/order-confirmation-epicerie";
 import { OrderConfirmationLac } from "@/lib/emails/order-confirmation-lac";
 import { AdminNewOrder } from "@/lib/emails/admin-new-order";
+import { getNumberSetting, SETTING_KEYS } from "@/lib/settings";
 import type Stripe from "stripe";
 
 export const runtime = "nodejs";
@@ -130,8 +131,23 @@ async function handleEpicerieOrder(
     return sum + Math.round(Number(variant.price) * 100) * item.quantity;
   }, 0);
 
-  const shippingCents = subtotalCents >= 6000 ? 0 : 690;
-  const totalCents = subtotalCents + shippingCents;
+  const shippingCostEuros = await getNumberSetting(
+    SETTING_KEYS.SHIPPING_COST_FRANCE.key,
+    SETTING_KEYS.SHIPPING_COST_FRANCE.default
+  );
+  const freeShippingThreshold = await getNumberSetting(
+    SETTING_KEYS.FREE_SHIPPING_THRESHOLD.key,
+    SETTING_KEYS.FREE_SHIPPING_THRESHOLD.default
+  );
+  const subtotalEurosCalc = subtotalCents / 100;
+  const shippingCents = subtotalEurosCalc >= freeShippingThreshold ? 0 : Math.round(shippingCostEuros * 100);
+
+  // Discount from promo code
+  const promoCodeId = metadata.promo_code_id || null;
+  const discountEuros = promoCodeId ? parseFloat(metadata.discount_amount || "0") : 0;
+  const discountCents = Math.round(discountEuros * 100);
+
+  const totalCents = subtotalCents + shippingCents - discountCents;
 
   const subtotalEuros = subtotalCents / 100;
   const shippingEuros = shippingCents / 100;
@@ -166,8 +182,9 @@ async function handleEpicerieOrder(
       status: "paid",
       subtotal: subtotalEuros,
       shippingCost: shippingEuros,
-      discountAmount: 0,
+      discountAmount: discountEuros,
       total: totalEuros,
+      promoCodeId: promoCodeId || null,
       paymentProvider: "stripe",
       paymentStatus: "paid",
       stripeSessionId: session.id,
@@ -180,6 +197,24 @@ async function handleEpicerieOrder(
     },
   });
   console.log("[webhook] Order created:", order.id, orderNumber);
+
+  // 8b. Create PromoCodeRedemption and increment usedCount
+  if (promoCodeId && discountEuros > 0) {
+    await prisma.promoCodeRedemption.create({
+      data: {
+        promoCodeId,
+        orderId: order.id,
+        customerProfileId: customer.id,
+        guestEmail: email,
+        discountAmount: discountEuros,
+      },
+    });
+    await prisma.promoCode.update({
+      where: { id: promoCodeId },
+      data: { usedCount: { increment: 1 } },
+    });
+    console.log("[webhook] PromoCodeRedemption created for:", promoCodeId);
+  }
 
   // 9. Decrement stock for each variant
   for (const item of items) {
@@ -326,8 +361,18 @@ async function handleLacOrder(
     return sum + Math.round(Number(dish.price) * 100) * item.quantity;
   }, 0);
 
-  const shippingCents = deliveryMethod === "local_delivery" ? 500 : 0;
-  const totalCents = subtotalCents + shippingCents;
+  const lacDeliveryFee = await getNumberSetting(
+    SETTING_KEYS.LAC_DELIVERY_FEE.key,
+    SETTING_KEYS.LAC_DELIVERY_FEE.default
+  );
+  const shippingCents = deliveryMethod === "local_delivery" ? Math.round(lacDeliveryFee * 100) : 0;
+
+  // Discount from promo code
+  const lacPromoCodeId = metadata.promo_code_id || null;
+  const lacDiscountEuros = lacPromoCodeId ? parseFloat(metadata.discount_amount || "0") : 0;
+  const lacDiscountCents = Math.round(lacDiscountEuros * 100);
+
+  const totalCents = subtotalCents + shippingCents - lacDiscountCents;
 
   const subtotalEuros = subtotalCents / 100;
   const shippingEuros = shippingCents / 100;
@@ -361,8 +406,9 @@ async function handleLacOrder(
       status: "paid",
       subtotal: subtotalEuros,
       shippingCost: shippingEuros,
-      discountAmount: 0,
+      discountAmount: lacDiscountEuros,
       total: totalEuros,
+      promoCodeId: lacPromoCodeId || null,
       paymentProvider: "stripe",
       paymentStatus: "paid",
       stripeSessionId: session.id,
@@ -375,6 +421,24 @@ async function handleLacOrder(
     },
   });
   console.log("[webhook] LAC Order created:", order.id, orderNumber);
+
+  // Create PromoCodeRedemption and increment usedCount
+  if (lacPromoCodeId && lacDiscountEuros > 0) {
+    await prisma.promoCodeRedemption.create({
+      data: {
+        promoCodeId: lacPromoCodeId,
+        orderId: order.id,
+        customerProfileId: customer.id,
+        guestEmail: email,
+        discountAmount: lacDiscountEuros,
+      },
+    });
+    await prisma.promoCode.update({
+      where: { id: lacPromoCodeId },
+      data: { usedCount: { increment: 1 } },
+    });
+    console.log("[webhook] LAC PromoCodeRedemption created for:", lacPromoCodeId);
+  }
 
   // Send confirmation email to customer
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://chezmisou.com";
