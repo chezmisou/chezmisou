@@ -9,9 +9,9 @@ import LacDeadlineCountdown from "@/components/public/LacDeadlineCountdown";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Lunch After Church — Menu du dimanche",
+  title: "Lunch After Church",
   description:
-    "Commandez le menu du dimanche préparé avec amour par Misou. Cuisine haïtienne authentique, retrait sur place ou livraison locale.",
+    "Le menu du dimanche préparé avec amour par Misou. Commandez avant la deadline et choisissez entre retrait et livraison locale.",
 };
 
 const priceFormatter = new Intl.NumberFormat("fr-FR", {

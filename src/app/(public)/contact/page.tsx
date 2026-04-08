@@ -3,9 +3,9 @@ import Link from "next/link";
 import { ArrowLeft, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Nous écrire",
+  title: "Contact",
   description:
-    "Pour toute question, devis ou commande particulière, écrivez-nous. Contact Chez Misou — Manje Lakay.",
+    "Contactez Chez Misou pour toute question, commande spéciale ou demande d'information.",
 };
 
 export default function ContactPage() {

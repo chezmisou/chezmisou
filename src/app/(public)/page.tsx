@@ -1,6 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, UtensilsCrossed, Sun, ChevronDown, ArrowRight } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Chez Misou — Manje Lakay",
+  description:
+    "Bienvenue chez Misou ! Épicerie fine haïtienne, traiteur pour vos événements et Lunch After Church chaque dimanche. Le goût authentique d'Haïti, comme à la maison.",
+  openGraph: {
+    title: "Chez Misou — Manje Lakay",
+    description:
+      "Bienvenue chez Misou ! Épicerie fine haïtienne, traiteur pour vos événements et Lunch After Church chaque dimanche.",
+    type: "website",
+  },
+};
 
 const activities = [
   {

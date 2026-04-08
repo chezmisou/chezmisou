@@ -7,9 +7,9 @@ import TraiteurStickyBar from "@/components/public/TraiteurStickyBar";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Traiteur — Chez Misou",
+  title: "Traiteur",
   description:
-    "Offrez à vos invités un repas qui ne ressemble à aucun autre. Cuisine haïtienne authentique pour vos événements.",
+    "Anniversaires, fêtes familiales, plateaux repas : Misou cuisine pour vos événements. Demandez votre devis personnalisé.",
 };
 
 export default async function TraiteurPage() {

@@ -15,11 +15,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await prisma.product.findUnique({
     where: { slug },
+    include: { images: { orderBy: { position: "asc" }, take: 1 } },
   });
   if (!product) return {};
+  const description = product.description.slice(0, 160);
+  const image = product.images[0];
   return {
     title: product.name,
-    description: product.description.slice(0, 160),
+    description,
+    openGraph: {
+      title: product.name,
+      description,
+      type: "article",
+      ...(image && {
+        images: [{ url: image.url, alt: image.alt || product.name }],
+      }),
+    },
   };
 }
 

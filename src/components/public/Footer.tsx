@@ -105,17 +105,17 @@ export default function Footer() {
             &copy; 2026 Chez Misou &mdash; Manje Lakay. Tous droits r&eacute;serv&eacute;s.
           </p>
           <div className="flex items-center justify-center gap-4 mt-3 text-xs text-blanc-creme/40">
-            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Mentions légales">
-              Mentions l&eacute;gales
-            </a>
+            <Link href="/mentions-legales" className="hover:text-blanc-creme/70 transition-colors" aria-label="Mentions légales">
+              Mentions légales
+            </Link>
             <span>&middot;</span>
-            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Conditions générales de vente">
+            <Link href="/cgv" className="hover:text-blanc-creme/70 transition-colors" aria-label="Conditions générales de vente">
               CGV
-            </a>
+            </Link>
             <span>&middot;</span>
-            <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Politique de confidentialité">
-              Confidentialit&eacute;
-            </a>
+            <Link href="/confidentialite" className="hover:text-blanc-creme/70 transition-colors" aria-label="Politique de confidentialité">
+              Confidentialité
+            </Link>
             <span>&middot;</span>
             <Link href="/admin/login" className="hover:text-orange transition-colors">
               Admin

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "L'épicerie fine",
   description:
-    "Les saveurs d'Haïti livrées chez vous. Krémas, pikliz, épices, café et plus encore.",
+    "Découvrez notre sélection de produits haïtiens authentiques : krémas, piments, pikliz, épices et bien plus. Livraison en France métropolitaine.",
 };
 
 export default async function EpiceriePage() {
