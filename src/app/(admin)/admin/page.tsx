@@ -36,6 +36,7 @@ export default async function AdminDashboard() {
     activeProducts,
     lowStockVariants,
     recentOrders,
+    upcomingLacMenu,
   ] = await Promise.all([
     prisma.order.count(),
     prisma.order.count({
@@ -59,7 +60,17 @@ export default async function AdminDashboard() {
         customer: { select: { firstName: true, lastName: true, email: true } },
       },
     }),
+    prisma.lacMenu.findFirst({
+      where: { isPublished: true, serviceDate: { gte: new Date() } },
+      orderBy: { serviceDate: "asc" },
+    }),
   ]);
+
+  const lacOrderCount = upcomingLacMenu
+    ? await prisma.order.count({
+        where: { type: "lac", lacMenuId: upcomingLacMenu.id, paymentStatus: "paid" },
+      })
+    : 0;
 
   const totalRevenue = Number(revenueResult._sum.total) || 0;
   const todayRevenue = Number(revenueTodayResult._sum.total) || 0;
@@ -117,6 +128,46 @@ export default async function AdminDashboard() {
             )}
           </div>
         ))}
+      </div>
+
+      {/* Prochain LAC */}
+      <div className="bg-blanc rounded-2xl p-6 shadow-sm border border-marron-doux/20">
+        <h2 className="font-serif text-xl font-bold text-marron-profond mb-4">
+          Prochain Lunch After Church
+        </h2>
+        {upcomingLacMenu ? (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-1">
+              <p className="text-marron-profond font-medium capitalize">
+                {format(upcomingLacMenu.serviceDate, "EEEE d MMMM yyyy", { locale: fr })}
+              </p>
+              <p className="text-text-body text-sm capitalize">
+                Deadline : {format(upcomingLacMenu.orderDeadline, "EEEE d MMMM HH'h'mm", { locale: fr })}
+              </p>
+              <p className="text-text-body text-sm">
+                {lacOrderCount} commande{lacOrderCount !== 1 ? "s" : ""} payée{lacOrderCount !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <Link
+              href={`/admin/lac/${upcomingLacMenu.id}/commandes`}
+              className="inline-flex items-center gap-2 bg-orange text-blanc px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-vif transition-colors text-sm whitespace-nowrap"
+            >
+              Voir le récap
+            </Link>
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <p className="text-gris-chaud">
+              Aucun menu publié pour ce dimanche.
+            </p>
+            <Link
+              href="/admin/lac/nouveau"
+              className="inline-flex items-center gap-2 bg-orange text-blanc px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-vif transition-colors text-sm whitespace-nowrap"
+            >
+              Créer un menu
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Recent orders */}
