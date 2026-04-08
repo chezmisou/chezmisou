@@ -48,9 +48,12 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "prisma",
+      "@prisma/client",
       "@prisma/engines",
-      "esbuild"
+      "esbuild",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
     ]
   }
 }
