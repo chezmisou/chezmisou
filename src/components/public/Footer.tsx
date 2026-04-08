@@ -116,6 +116,10 @@ export default function Footer() {
             <a href="#" className="hover:text-blanc-creme/70 transition-colors" aria-label="Politique de confidentialité">
               Confidentialit&eacute;
             </a>
+            <span>&middot;</span>
+            <Link href="/admin/login" className="hover:text-orange transition-colors">
+              Admin
+            </Link>
           </div>
         </div>
       </div>
