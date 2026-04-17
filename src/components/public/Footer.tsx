@@ -50,6 +50,13 @@ export default function Footer() {
                 </Link>
               ))}
               <Link
+                href="/compte"
+                aria-label="Mon compte"
+                className="text-sm text-blanc-creme/70 hover:text-orange transition-colors duration-200"
+              >
+                Mon compte
+              </Link>
+              <Link
                 href="/mes-commandes"
                 aria-label="Mes commandes"
                 className="text-sm text-blanc-creme/70 hover:text-orange transition-colors duration-200"

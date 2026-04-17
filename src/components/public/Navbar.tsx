@@ -8,6 +8,7 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CartButton from "@/components/public/CartButton";
 import LacCartButton from "@/components/public/LacCartButton";
+import UserMenu from "@/components/public/UserMenu";
 
 const navLinks = [
   { label: "Chez Misou", href: "/", ariaLabel: "Accueil Chez Misou" },
@@ -77,6 +78,9 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {/* User menu */}
+          <UserMenu />
+
           {/* Cart buttons */}
           <CartButton />
           <LacCartButton />
@@ -148,6 +152,9 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          <div className="mt-3 pt-3 border-t border-marron-profond/10">
+            <UserMenu variant="mobile" onNavigate={() => setMobileOpen(false)} />
+          </div>
         </nav>
       </div>
     </header>
