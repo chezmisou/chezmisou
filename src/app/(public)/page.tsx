@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, UtensilsCrossed, Sun, ChevronDown, ArrowRight } from "lucide-react";
+import { isTraiteurEnabled } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Chez Misou — Manje Lakay",
@@ -39,7 +40,9 @@ const activities = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const traiteurEnabled = await isTraiteurEnabled();
+
   return (
     <div className="flex flex-col">
       {/* Section A — Hero */}
@@ -175,6 +178,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {activities.map((activity) => {
               const Icon = activity.icon;
+              const comingSoon = !traiteurEnabled && activity.href === "/traiteur";
               return (
                 <div
                   key={activity.href}
@@ -186,6 +190,11 @@ export default function HomePage() {
                   <h3 className="font-serif text-2xl text-marron-profond font-bold mb-3">
                     {activity.title}
                   </h3>
+                  {comingSoon && (
+                    <span className="-mt-1 mb-3 text-xs uppercase tracking-wider font-semibold text-orange bg-orange/10 px-2.5 py-1 rounded-full">
+                      Bientôt disponible
+                    </span>
+                  )}
                   <p className="font-sans text-text-body leading-relaxed mb-6">
                     {activity.description}
                   </p>
@@ -194,7 +203,7 @@ export default function HomePage() {
                     className="inline-flex items-center gap-1 text-orange font-sans font-semibold hover:gap-2 transition-all duration-200"
                     aria-label={`Découvrir ${activity.title}`}
                   >
-                    Découvrir <ArrowRight size={16} aria-hidden="true" />
+                    {comingSoon ? "En savoir plus" : "Découvrir"} <ArrowRight size={16} aria-hidden="true" />
                   </Link>
                 </div>
               );

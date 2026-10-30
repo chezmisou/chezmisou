@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import TraiteurDishCard from "@/components/public/TraiteurDishCard";
 import TraiteurQuoteForm from "@/components/public/TraiteurQuoteForm";
 import TraiteurStickyBar from "@/components/public/TraiteurStickyBar";
+import TraiteurComingSoon from "@/components/public/TraiteurComingSoon";
+import { isTraiteurEnabled } from "@/lib/settings";
+import { isCurrentUserAdmin } from "@/lib/auth/requireAdmin";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +16,13 @@ export const metadata: Metadata = {
 };
 
 export default async function TraiteurPage() {
+  const enabled = await isTraiteurEnabled();
+  // Tant que la section est fermée, seule l'admin voit la page complète (aperçu)
+  const isPreview = !enabled && (await isCurrentUserAdmin());
+  if (!enabled && !isPreview) {
+    return <TraiteurComingSoon />;
+  }
+
   const dishes = await prisma.traiteurDish.findMany({
     where: { isActive: true },
     include: { formats: { orderBy: { minPeople: "asc" } } },
@@ -43,6 +53,13 @@ export default async function TraiteurPage() {
 
   return (
     <>
+      {isPreview && (
+        <div className="bg-jaune-clair text-marron-profond text-sm text-center px-4 py-2 font-medium">
+          Aperçu admin — cette page est affichée « bientôt disponible » pour
+          les visiteurs. Activez-la depuis l&apos;admin (Plats traiteur).
+        </div>
+      )}
+
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-marron-profond via-marron to-marron-profond text-blanc py-20 md:py-28 px-4">
         <div className="max-w-3xl mx-auto text-center">

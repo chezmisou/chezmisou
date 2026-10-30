@@ -9,6 +9,7 @@ export const SETTING_KEYS = {
   CONTACT_EMAIL: { key: "contact_email", type: "string", default: "contact@chezmisou.com" },
   CONTACT_PHONE: { key: "contact_phone", type: "string", default: "" },
   PICKUP_ADDRESS: { key: "pickup_address", type: "string", default: "" },
+  TRAITEUR_ENABLED: { key: "traiteur_enabled", type: "boolean", default: false },
 } as const;
 
 const VALID_KEYS: Set<string> = new Set(Object.values(SETTING_KEYS).map((s) => s.key));
@@ -32,6 +33,27 @@ export async function getNumberSetting(key: string, fallback: number): Promise<n
 export async function getStringSetting(key: string, fallback: string): Promise<string> {
   const raw = await getSetting(key);
   return raw ?? fallback;
+}
+
+export async function getBooleanSetting(key: string, fallback: boolean): Promise<boolean> {
+  const raw = await getSetting(key);
+  if (raw === null) return fallback;
+  return raw === "true";
+}
+
+/**
+ * Indique si la section Traiteur est ouverte au public.
+ * Tant qu'elle ne l'est pas, le site l'affiche comme « bientôt disponible ».
+ */
+export async function isTraiteurEnabled(): Promise<boolean> {
+  try {
+    return await getBooleanSetting(
+      SETTING_KEYS.TRAITEUR_ENABLED.key,
+      SETTING_KEYS.TRAITEUR_ENABLED.default
+    );
+  } catch {
+    return SETTING_KEYS.TRAITEUR_ENABLED.default;
+  }
 }
 
 export async function getAllSettings(): Promise<Record<string, string>> {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { upsertSetting, isValidSettingKey } from "@/lib/settings";
 
@@ -29,6 +30,9 @@ export async function POST(req: NextRequest) {
   for (const [key, value] of entries) {
     await upsertSetting(key, String(value));
   }
+
+  // Certains réglages (ex. ouverture du Traiteur) changent le rendu public
+  revalidatePath("/", "layout");
 
   return NextResponse.json({ ok: true });
 }

@@ -3,9 +3,18 @@ import { prisma } from "@/lib/prisma";
 import { resend, RESEND_FROM } from "@/lib/resend";
 import { QuoteRequestReceived } from "@/lib/emails/quote-request-received";
 import { QuoteRequestAdminNotification } from "@/lib/emails/quote-request-admin-notification";
+import { isTraiteurEnabled } from "@/lib/settings";
+import { isCurrentUserAdmin } from "@/lib/auth/requireAdmin";
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await isTraiteurEnabled()) && !(await isCurrentUserAdmin())) {
+      return NextResponse.json(
+        { error: "Le service traiteur n'est pas encore ouvert" },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { name, email, phone, eventDate, eventType, nbPeople, eventLocation, message, selectedDishes } = body;
 
