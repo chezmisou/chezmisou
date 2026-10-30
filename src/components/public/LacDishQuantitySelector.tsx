@@ -12,6 +12,7 @@ interface Props {
   price: number;
   maxQuantity?: number | null;
   deadlinePassed: boolean;
+  onAdded?: () => void;
 }
 
 export default function LacDishQuantitySelector({
@@ -22,6 +23,7 @@ export default function LacDishQuantitySelector({
   price,
   maxQuantity,
   deadlinePassed,
+  onAdded,
 }: Props) {
   const { addItem, items, openCart } = useLacCart();
   const [qty, setQty] = useState(1);
@@ -53,6 +55,7 @@ export default function LacDishQuantitySelector({
     }
 
     setQty(1);
+    onAdded?.();
     openCart();
   }
 
