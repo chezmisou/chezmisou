@@ -87,7 +87,9 @@ export default function Footer({ traiteurEnabled = true }: { traiteurEnabled?: b
               </a>
               <div className="flex items-center gap-4 mt-2">
                 <a
-                  href="#"
+                  href="https://www.instagram.com/chezmisou_/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label="Suivez-nous sur Instagram"
                   className="p-2 rounded-full bg-blanc-creme/10 hover:bg-orange/20 hover:text-orange transition-colors duration-200"
                 >
