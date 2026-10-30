@@ -11,7 +11,7 @@ const navLinks = [
   { label: "Contact", href: "/contact" },
 ];
 
-export default function Footer() {
+export default function Footer({ traiteurEnabled = true }: { traiteurEnabled?: boolean }) {
   return (
     <footer className="bg-marron-profond text-blanc-creme">
       <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
@@ -47,6 +47,11 @@ export default function Footer() {
                   className="text-sm text-blanc-creme/70 hover:text-orange transition-colors duration-200"
                 >
                   {link.label}
+                  {!traiteurEnabled && link.href === "/traiteur" && (
+                    <span className="ml-1.5 text-[10px] uppercase tracking-wider text-orange">
+                      (bientôt)
+                    </span>
+                  )}
                 </Link>
               ))}
               <Link

@@ -2,6 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { Plus, Pencil, ExternalLink } from "lucide-react";
+import { isTraiteurEnabled } from "@/lib/settings";
+import TraiteurAvailabilityToggle from "@/components/admin/TraiteurAvailabilityToggle";
+
+export const dynamic = "force-dynamic";
 
 function formatCurrency(value: unknown): string {
   const num = Number(value) || 0;
@@ -16,6 +20,7 @@ export default async function AdminTraiteurPage() {
     include: { formats: { orderBy: { minPeople: "asc" } } },
     orderBy: [{ position: "asc" }, { createdAt: "desc" }],
   });
+  const traiteurEnabled = await isTraiteurEnabled();
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -36,6 +41,8 @@ export default async function AdminTraiteurPage() {
           Nouveau plat traiteur
         </Link>
       </div>
+
+      <TraiteurAvailabilityToggle initialEnabled={traiteurEnabled} />
 
       {dishes.length === 0 ? (
         <div className="bg-blanc rounded-2xl p-12 shadow-sm border border-marron-doux/20 text-center">

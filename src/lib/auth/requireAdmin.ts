@@ -28,3 +28,23 @@ export async function requireAdmin() {
 
   return { error: null, user };
 }
+
+/** Version non bloquante : indique si le visiteur courant est admin. */
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user?.email) return false;
+
+    const adminEmails = (process.env.ADMIN_EMAILS || "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+
+    return adminEmails.includes(user.email.toLowerCase());
+  } catch {
+    return false;
+  }
+}

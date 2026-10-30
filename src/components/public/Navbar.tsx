@@ -19,7 +19,15 @@ const navLinks = [
   { label: "Contact", href: "/contact", ariaLabel: "Nous contacter" },
 ];
 
-export default function Navbar() {
+function ComingSoonBadge() {
+  return (
+    <span className="ml-1.5 align-middle text-[10px] uppercase tracking-wider font-semibold text-orange bg-orange/10 px-1.5 py-0.5 rounded-full">
+      Bientôt
+    </span>
+  );
+}
+
+export default function Navbar({ traiteurEnabled = true }: { traiteurEnabled?: boolean }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -73,6 +81,7 @@ export default function Navbar() {
               )}
             >
               {link.label}
+              {!traiteurEnabled && link.href === "/traiteur" && <ComingSoonBadge />}
             </Link>
           ))}
         </nav>
@@ -150,6 +159,7 @@ export default function Navbar() {
               )}
             >
               {link.label}
+              {!traiteurEnabled && link.href === "/traiteur" && <ComingSoonBadge />}
             </Link>
           ))}
           <div className="mt-3 pt-3 border-t border-marron-profond/10">
