@@ -63,9 +63,22 @@ Avant le déploiement, configurer ces variables dans Vercel :
 - `NEXT_PUBLIC_SUPABASE_URL` — URL du projet Supabase
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Clé publique Supabase
 - `SUPABASE_SERVICE_ROLE_KEY` — Clé service Supabase (⚠️ secret)
+- `STRIPE_SECRET_KEY` — Clé secrète Stripe (`sk_test_…` en test, `sk_live_…` en production) (⚠️ secret)
+- `STRIPE_WEBHOOK_SECRET` — Signing secret du webhook Stripe (`whsec_…`, différent en test et en live) (⚠️ secret)
 - `RESEND_API_KEY` — Clé API Resend
-- `RESEND_FROM_EMAIL` — Adresse email d'expédition
-- `NEXT_PUBLIC_APP_URL` — URL publique de l'application
+- `RESEND_FROM_EMAIL` — Adresse email d'expédition (sur un domaine vérifié chez Resend, sinon les clients ne reçoivent rien)
+- `NEXT_PUBLIC_APP_URL` — URL publique de l'application (sert aux liens de retour Stripe, ne doit pas valoir `localhost` en prod)
+- `ADMIN_EMAILS` — Emails des administrateurs, séparés par des virgules
+
+## Paiement Stripe en production
+
+1. Activer le compte Stripe (Dashboard > Activer les paiements : infos société, IBAN).
+2. Récupérer les clés **live** (Developers > API keys) et les mettre dans `STRIPE_SECRET_KEY` sur Vercel.
+3. En mode live, créer un webhook (Developers > Webhooks) :
+   - URL : `https://<domaine>/api/stripe/webhook`
+   - Événement : `checkout.session.completed`
+4. Copier son signing secret dans `STRIPE_WEBHOOK_SECRET` sur Vercel, puis redéployer.
+5. Faire un vrai achat de faible montant, vérifier que la commande apparaît dans l'admin, puis le rembourser depuis Stripe.
 
 ## Spécifications
 
