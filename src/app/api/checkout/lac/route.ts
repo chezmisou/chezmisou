@@ -367,7 +367,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url, sessionId: session.id });
   } catch (err) {
     console.error("[checkout/lac] Erreur:", err);
     return NextResponse.json(

@@ -258,7 +258,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url, sessionId: session.id });
   } catch (err) {
     console.error("[checkout/epicerie] Erreur:", err);
     return NextResponse.json(
