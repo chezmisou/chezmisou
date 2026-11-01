@@ -46,8 +46,11 @@ export async function api<T>(
     data = null;
   }
   if (!res.ok) {
+    const apiMessage = (data as { error?: string } | null)?.error;
+    // Pas de message de l'API : le site n'a pas répondu comme prévu (mauvaise adresse, page absente…)
     const message =
-      (data as { error?: string } | null)?.error || "Une erreur est survenue. Réessayez.";
+      apiMessage ||
+      `Le site ne répond pas comme prévu (erreur ${res.status} sur ${API_URL.replace(/^https?:\/\//, "")}). Réessayez.`;
     throw new ApiError(message, res.status);
   }
   return data as T;
