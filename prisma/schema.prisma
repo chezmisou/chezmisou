@@ -241,6 +241,10 @@ model Order {
   paymentStatus     PaymentStatus  @default(pending)
   stripeSessionId   String?        @unique
   deliveryMethod    DeliveryMethod
+  /// LAC : église de retrait choisie (« Nom — adresse »), figée au moment de la commande
+  pickupLocation    String?
+  /// LAC : distance de livraison depuis Chelles (km, à vol d'oiseau)
+  deliveryDistanceKm Decimal?     @db.Decimal(6, 1)
   shippingAddressId String?
   notes             String?
   lacMenuId         String?

@@ -33,6 +33,7 @@ interface AdminNewOrderProps {
     city: string;
     country: string;
   };
+  pickupLocation?: string;
   paymentNote?: string;
   appUrl: string;
 }
@@ -48,6 +49,7 @@ export function AdminNewOrder({
   shippingCost,
   total,
   address,
+  pickupLocation,
   paymentNote,
   appUrl,
 }: AdminNewOrderProps) {
@@ -161,7 +163,12 @@ export function AdminNewOrder({
                 </Text>
               </>
             ) : (
-              <Text style={sectionTitle}>Retrait sur place</Text>
+              <>
+                <Text style={sectionTitle}>Retrait sur place</Text>
+                {pickupLocation && (
+                  <Text style={paragraph}>{pickupLocation}</Text>
+                )}
+              </>
             )}
 
             <Hr style={divider} />

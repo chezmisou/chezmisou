@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe-server";
 import { prisma } from "@/lib/prisma";
-import { getNumberSetting, SETTING_KEYS } from "@/lib/settings";
+import { getLacPickupSettings, quoteLacDelivery } from "@/lib/lac-delivery-server";
+import { churchLabel } from "@/lib/lac-delivery";
 import { activeLacOrderWhere, createLacOrder } from "@/lib/orders/lac";
 
 export const runtime = "nodejs";
@@ -16,6 +17,8 @@ interface CheckoutBody {
   lacMenuId: string;
   items: CheckoutItem[];
   deliveryMethod: "pickup" | "local_delivery";
+  /** Retrait : id de l'église choisie (voir Paramètres > LAC) */
+  pickupLocationId?: string;
   customer: {
     email: string;
     firstName: string;
@@ -46,7 +49,7 @@ function formatDateFr(date: Date): string {
 export async function POST(req: NextRequest) {
   try {
     const body: CheckoutBody = await req.json();
-    const { lacMenuId, items, deliveryMethod, customer, address, instructions, notes, promoCodeId } = body;
+    const { lacMenuId, items, deliveryMethod, pickupLocationId, customer, address, instructions, notes, promoCodeId } = body;
     const paymentMethod = body.paymentMethod === "card" ? "card" : "cash";
 
     if (deliveryMethod !== "pickup" && deliveryMethod !== "local_delivery") {
@@ -91,6 +94,38 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
+    }
+
+    // --- Lieu de retrait (église) ou prix de livraison selon la distance ---
+    let pickupLocation: string | null = null;
+    let pickupChurchName: string | null = null;
+    let deliveryFeeEuros = 0;
+    let deliveryDistanceKm: number | null = null;
+
+    if (deliveryMethod === "pickup") {
+      const { churches } = await getLacPickupSettings();
+      if (churches.length > 0) {
+        const church = churches.find((c) => c.id === pickupLocationId);
+        if (!church) {
+          return NextResponse.json(
+            { error: "Choisissez l'église où récupérer votre commande" },
+            { status: 400 }
+          );
+        }
+        pickupLocation = churchLabel(church);
+        pickupChurchName = church.name;
+      }
+    } else if (address) {
+      const quote = await quoteLacDelivery({
+        line1: address.line1,
+        postalCode: address.postalCode,
+        city: address.city,
+      });
+      if (!quote.ok) {
+        return NextResponse.json({ error: quote.error }, { status: 400 });
+      }
+      deliveryFeeEuros = quote.fee;
+      deliveryDistanceKm = quote.distanceKm;
     }
 
     // --- Re-fetch menu from database ---
@@ -170,12 +205,7 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    // --- Read dynamic settings ---
-    const lacDeliveryFee = await getNumberSetting(
-      SETTING_KEYS.LAC_DELIVERY_FEE.key,
-      SETTING_KEYS.LAC_DELIVERY_FEE.default
-    );
-    const deliveryFeeCents = Math.round(lacDeliveryFee * 100);
+    const deliveryFeeCents = Math.round(deliveryFeeEuros * 100);
 
     // --- Calculate subtotal ---
     const subtotalCents = lineItems.reduce(
@@ -246,6 +276,9 @@ export async function POST(req: NextRequest) {
         address: deliveryMethod === "local_delivery" ? address : null,
         instructions,
         notes,
+        pickupLocation,
+        shippingEuros: deliveryFeeEuros,
+        deliveryDistanceKm,
         promoCodeId: validatedPromoCode?.id ?? null,
         discountEuros: discountAmountCents / 100,
         payment: { method: "cash" },
@@ -264,7 +297,7 @@ export async function POST(req: NextRequest) {
               shipping_rate_data: {
                 type: "fixed_amount" as const,
                 fixed_amount: { amount: deliveryFeeCents, currency: "eur" },
-                display_name: "Livraison locale",
+                display_name: `Livraison à domicile (${deliveryDistanceKm} km)`,
               },
             },
           ]
@@ -273,7 +306,9 @@ export async function POST(req: NextRequest) {
               shipping_rate_data: {
                 type: "fixed_amount" as const,
                 fixed_amount: { amount: 0, currency: "eur" },
-                display_name: "Retrait sur place",
+                display_name: pickupChurchName
+                  ? `Retrait : ${pickupChurchName}`.slice(0, 100)
+                  : "Retrait sur place",
               },
             },
           ];
@@ -310,6 +345,9 @@ export async function POST(req: NextRequest) {
         order_type: "lac",
         lac_menu_id: lacMenuId,
         delivery_method: deliveryMethod,
+        pickup_location: (pickupLocation || "").slice(0, 500),
+        delivery_fee: deliveryFeeEuros.toFixed(2),
+        delivery_distance_km: deliveryDistanceKm != null ? String(deliveryDistanceKm) : "",
         customer_first_name: customer.firstName,
         customer_last_name: customer.lastName,
         customer_phone: customer.phone,

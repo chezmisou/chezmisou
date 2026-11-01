@@ -23,6 +23,7 @@ interface OrderConfirmationLacProps {
   orderNumber: string;
   serviceDate: string;
   deliveryMethod: "pickup" | "local_delivery";
+  pickupLocation?: string;
   paymentMethod?: "cash" | "card";
   items: OrderItem[];
   subtotal: number;
@@ -44,6 +45,7 @@ export function OrderConfirmationLac({
   orderNumber,
   serviceDate,
   deliveryMethod,
+  pickupLocation,
   paymentMethod = "card",
   items,
   subtotal,
@@ -94,12 +96,21 @@ export function OrderConfirmationLac({
 
             {deliveryMethod === "pickup" ? (
               <>
-                <Text style={sectionTitle}>Retrait sur place</Text>
-                <Text style={paragraph}>
-                  Vous viendrez chercher votre commande dimanche matin.
-                  Vous recevrez un second email avec les détails
-                  dans les prochaines heures.
-                </Text>
+                <Text style={sectionTitle}>Retrait à l&rsquo;église</Text>
+                {pickupLocation ? (
+                  <>
+                    <Text style={paragraph}>
+                      Votre commande vous attendra dimanche après le culte :
+                    </Text>
+                    <Text style={addressBlock}>{pickupLocation}</Text>
+                  </>
+                ) : (
+                  <Text style={paragraph}>
+                    Vous viendrez chercher votre commande dimanche matin.
+                    Vous recevrez un second email avec les détails
+                    dans les prochaines heures.
+                  </Text>
+                )}
               </>
             ) : (
               <>
