@@ -100,9 +100,17 @@ export default async function AdminCommandeDetailPage({
               {order.deliveryMethod === "pickup"
                 ? "Retrait sur place"
                 : order.deliveryMethod === "local_delivery"
-                  ? "Livraison locale"
+                  ? "Livraison à domicile"
                   : "Livraison"}
             </p>
+            {order.pickupLocation && (
+              <p className="text-marron-profond font-medium">{order.pickupLocation}</p>
+            )}
+            {order.deliveryDistanceKm != null && (
+              <p className="text-gris-chaud text-xs">
+                {Number(order.deliveryDistanceKm).toLocaleString("fr-FR")} km depuis Chelles
+              </p>
+            )}
             {order.address && (
               <div className="text-marron-profond">
                 <p>{order.address.line1}</p>

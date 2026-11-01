@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Truck, ShoppingCart, Utensils } from "lucide-react";
+import { ArrowLeft, Church, Truck, ShoppingCart, Utensils } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { getLacPickupSettings } from "@/lib/lac-delivery-server";
 import LacDishCard from "@/components/public/LacDishCard";
 import LacDeadlineCountdown from "@/components/public/LacDeadlineCountdown";
 
@@ -10,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Lunch After Church",
   description:
-    "Le menu du dimanche préparé avec amour par Misou. Commandez avant la deadline et choisissez entre retrait et livraison locale.",
+    "Le menu du dimanche préparé avec amour par Misou. Commandez avant la deadline et récupérez-le dans votre église ou faites-vous livrer en Île-de-France.",
 };
 
 function formatDateFr(date: Date): string {
@@ -35,6 +36,8 @@ function formatDeadlineFr(date: Date): string {
 
 export default async function LacPage() {
   const now = new Date();
+  const { churches, tiers } = await getLacPickupSettings();
+  const minDeliveryFee = Math.min(...tiers.map((t) => t.price));
   const upcomingMenu = await prisma.lacMenu.findFirst({
     where: {
       isPublished: true,
@@ -111,23 +114,48 @@ export default async function LacPage() {
         </div>
       </section>
 
-      {/* Delivery zone */}
-      {upcomingMenu.deliveryZoneText && (
+      {/* Mode de récupération */}
+      {(churches.length > 0 || upcomingMenu.deliveryZoneText) && (
         <section className="px-4 py-8">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-blanc rounded-2xl p-6 border border-marron-profond/10 shadow-sm flex gap-4 items-start">
+              <div className="w-10 h-10 rounded-full bg-orange/10 flex items-center justify-center shrink-0">
+                <Church size={20} className="text-orange" />
+              </div>
+              <div>
+                <h3 className="font-serif text-lg text-marron-profond mb-1">
+                  Retrait à l&rsquo;église · gratuit
+                </h3>
+                {churches.length > 0 ? (
+                  <ul className="font-sans text-sm text-text-body space-y-1">
+                    {churches.map((c) => (
+                      <li key={c.id}>
+                        <span className="font-semibold text-marron-profond">{c.name}</span>
+                        {c.address && <span className="text-gris-chaud"> · {c.address}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="font-sans text-sm text-text-body">Retrait sur place possible.</p>
+                )}
+                {upcomingMenu.deliveryZoneText && (
+                  <p className="font-sans text-xs text-gris-chaud mt-2">
+                    {upcomingMenu.deliveryZoneText}
+                  </p>
+                )}
+              </div>
+            </div>
             <div className="bg-blanc rounded-2xl p-6 border border-marron-profond/10 shadow-sm flex gap-4 items-start">
               <div className="w-10 h-10 rounded-full bg-orange/10 flex items-center justify-center shrink-0">
                 <Truck size={20} className="text-orange" />
               </div>
               <div>
                 <h3 className="font-serif text-lg text-marron-profond mb-1">
-                  Zone de livraison
+                  Livraison à domicile
                 </h3>
                 <p className="font-sans text-sm text-text-body">
-                  {upcomingMenu.deliveryZoneText}
-                </p>
-                <p className="font-sans text-xs text-gris-chaud mt-1">
-                  Ou retrait sur place possible.
+                  Partout en Île-de-France, dès {minDeliveryFee.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}.
+                  Le prix dépend de la distance depuis Chelles.
                 </p>
               </div>
             </div>
@@ -195,7 +223,7 @@ export default async function LacPage() {
                 Vous vous régalez
               </h3>
               <p className="font-sans text-sm text-text-body">
-                Retrait sur place ou livraison locale, selon votre préférence.
+                À récupérer dans votre église, ou livré chez vous en Île-de-France.
               </p>
             </div>
           </div>

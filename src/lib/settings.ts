@@ -4,6 +4,12 @@ export const SETTING_KEYS = {
   SHIPPING_COST_FRANCE: { key: "shipping_cost_france", type: "number", default: 6.9 },
   FREE_SHIPPING_THRESHOLD: { key: "free_shipping_threshold", type: "number", default: 60 },
   LAC_DELIVERY_FEE: { key: "lac_delivery_fee", type: "number", default: 5.0 },
+  /** JSON : [{ id, name, address }] — églises où récupérer sa commande LAC */
+  LAC_CHURCHES: { key: "lac_churches", type: "json", default: "[]" },
+  /** JSON : [{ upToKm, price }] — grille de livraison LAC selon la distance */
+  LAC_DELIVERY_TIERS: { key: "lac_delivery_tiers", type: "json", default: "" },
+  /** Adresse de départ des livraisons LAC (calcul de la distance) */
+  LAC_DELIVERY_ORIGIN: { key: "lac_delivery_origin", type: "string", default: "Chelles 77500" },
   LAC_DEFAULT_DEADLINE_DAY: { key: "lac_default_deadline_day", type: "string", default: "saturday" },
   LAC_DEFAULT_DEADLINE_TIME: { key: "lac_default_deadline_time", type: "string", default: "18:00" },
   CONTACT_EMAIL: { key: "contact_email", type: "string", default: "contact@chezmisou.com" },

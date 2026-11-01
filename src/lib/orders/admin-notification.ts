@@ -13,6 +13,7 @@ export async function sendAdminNotification({
   shippingEuros,
   totalEuros,
   address,
+  pickupLocation,
   paymentNote,
   subject,
 }: {
@@ -32,6 +33,7 @@ export async function sendAdminNotification({
     city: string;
     country: string;
   };
+  pickupLocation?: string;
   paymentNote?: string;
   subject: string;
 }) {
@@ -55,6 +57,7 @@ export async function sendAdminNotification({
         shippingCost: shippingEuros,
         total: totalEuros,
         address,
+        pickupLocation,
         paymentNote,
         appUrl,
       })

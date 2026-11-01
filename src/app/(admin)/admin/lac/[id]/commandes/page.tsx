@@ -61,7 +61,10 @@ export default async function LacMenuCommandesPage({
     }
   }
 
-  const pickupOrders = orders.filter((o) => o.deliveryMethod === "pickup");
+  // Regroupées par église pour la préparation
+  const pickupOrders = orders
+    .filter((o) => o.deliveryMethod === "pickup")
+    .sort((a, b) => (a.pickupLocation || "").localeCompare(b.pickupLocation || "", "fr"));
   const deliveryOrders = orders.filter((o) => o.deliveryMethod === "local_delivery");
 
   const serviceDateFormatted = format(menu.serviceDate, "EEEE d MMMM yyyy", {
@@ -177,6 +180,11 @@ export default async function LacMenuCommandesPage({
                     >
                       <td className="py-2 pr-4 text-marron-profond font-medium">
                         {name}
+                        {order.pickupLocation && (
+                          <span className="block text-xs font-normal text-text-body">
+                            ⛪ {order.pickupLocation.split(" — ")[0]}
+                          </span>
+                        )}
                         {order.paymentProvider === "cash" && (
                           <span
                             className={`block text-xs font-semibold ${
@@ -257,6 +265,11 @@ export default async function LacMenuCommandesPage({
                     >
                       <td className="py-2 pr-4 text-marron-profond font-medium">
                         {name}
+                        {order.pickupLocation && (
+                          <span className="block text-xs font-normal text-text-body">
+                            ⛪ {order.pickupLocation.split(" — ")[0]}
+                          </span>
+                        )}
                         {order.paymentProvider === "cash" && (
                           <span
                             className={`block text-xs font-semibold ${

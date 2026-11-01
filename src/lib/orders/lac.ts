@@ -3,7 +3,6 @@ import { render } from "@react-email/render";
 import { prisma } from "@/lib/prisma";
 import { resend, RESEND_FROM } from "@/lib/resend";
 import { OrderConfirmationLac } from "@/lib/emails/order-confirmation-lac";
-import { getNumberSetting, SETTING_KEYS } from "@/lib/settings";
 import { sendAdminNotification } from "@/lib/orders/admin-notification";
 
 export type LacPaymentMethod = "cash" | "card";
@@ -41,6 +40,11 @@ export interface CreateLacOrderInput {
   } | null;
   instructions?: string;
   notes?: string;
+  /** Retrait : église choisie (« Nom — adresse ») */
+  pickupLocation?: string | null;
+  /** Livraison : frais calculés selon la distance (déjà validés côté serveur) */
+  shippingEuros: number;
+  deliveryDistanceKm?: number | null;
   promoCodeId?: string | null;
   discountEuros: number;
   payment:
@@ -62,6 +66,9 @@ export async function createLacOrder(input: CreateLacOrderInput) {
     address: addressInput,
     instructions,
     notes,
+    pickupLocation,
+    shippingEuros: shippingInput,
+    deliveryDistanceKm,
     promoCodeId,
     discountEuros,
     payment,
@@ -109,12 +116,8 @@ export async function createLacOrder(input: CreateLacOrderInput) {
     return sum + Math.round(Number(dish.price) * 100) * item.quantity;
   }, 0);
 
-  const lacDeliveryFee = await getNumberSetting(
-    SETTING_KEYS.LAC_DELIVERY_FEE.key,
-    SETTING_KEYS.LAC_DELIVERY_FEE.default
-  );
   const shippingCents =
-    deliveryMethod === "local_delivery" ? Math.round(lacDeliveryFee * 100) : 0;
+    deliveryMethod === "local_delivery" ? Math.round(shippingInput * 100) : 0;
   const discountCents = promoCodeId ? Math.round(discountEuros * 100) : 0;
   const totalCents = subtotalCents + shippingCents - discountCents;
 
@@ -157,6 +160,11 @@ export async function createLacOrder(input: CreateLacOrderInput) {
       paymentStatus: isCash ? "pending" : "paid",
       stripeSessionId: payment.method === "card" ? payment.stripeSessionId : null,
       deliveryMethod,
+      pickupLocation: deliveryMethod === "pickup" ? pickupLocation || null : null,
+      deliveryDistanceKm:
+        deliveryMethod === "local_delivery" && deliveryDistanceKm != null
+          ? deliveryDistanceKm
+          : null,
       shippingAddressId: address?.id || null,
       notes: notes || null,
       items: { create: orderItems },
@@ -210,6 +218,7 @@ export async function createLacOrder(input: CreateLacOrderInput) {
         orderNumber,
         serviceDate: serviceDateStr,
         deliveryMethod,
+        pickupLocation: pickupLocation || undefined,
         paymentMethod: payment.method,
         items: emailItems,
         subtotal: subtotalEuros,
@@ -251,6 +260,8 @@ export async function createLacOrder(input: CreateLacOrderInput) {
     subtotalEuros,
     shippingEuros,
     totalEuros,
+    pickupLocation:
+      deliveryMethod === "pickup" ? pickupLocation || "Retrait (lieu non précisé)" : undefined,
     paymentNote: isCash
       ? `💶 Paiement en espèces : ${totalEuros.toFixed(2)} € à encaisser à la remise`
       : undefined,

@@ -286,13 +286,16 @@ export default function LacMenuForm({ initialData }: Props) {
 
         <div>
           <label className="block text-sm font-medium text-marron-profond mb-1">
-            Zone de livraison
+            Info récupération pour ce dimanche (optionnel)
           </label>
+          <p className="text-xs text-gris-chaud mb-1">
+            Les églises et les prix de livraison se règlent dans Paramètres.
+          </p>
           <textarea
             value={form.deliveryZoneText}
             onChange={(e) => updateField("deliveryZoneText", e.target.value)}
             rows={2}
-            placeholder="ex : Paris 18e, 9e, 10e et communes limitrophes"
+            placeholder="ex : Retrait possible jusqu'à 14h"
             className="w-full px-4 py-2.5 rounded-xl border border-marron-doux/30 bg-blanc-creme text-marron-profond focus:border-orange focus:outline-none focus:ring-1 focus:ring-orange resize-none"
           />
         </div>

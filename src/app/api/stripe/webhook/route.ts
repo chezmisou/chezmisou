@@ -345,6 +345,15 @@ async function handleLacOrder(
         : null,
     instructions: metadata.delivery_instructions || undefined,
     notes: metadata.notes || undefined,
+    pickupLocation: metadata.pickup_location || null,
+    // Frais réellement facturés par Stripe (calculés selon la distance au checkout)
+    shippingEuros:
+      session.shipping_cost?.amount_total != null
+        ? session.shipping_cost.amount_total / 100
+        : parseFloat(metadata.delivery_fee || "0") || 0,
+    deliveryDistanceKm: metadata.delivery_distance_km
+      ? parseFloat(metadata.delivery_distance_km)
+      : null,
     promoCodeId: metadata.promo_code_id || null,
     discountEuros: metadata.promo_code_id
       ? parseFloat(metadata.discount_amount || "0")
