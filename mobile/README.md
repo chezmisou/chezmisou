@@ -29,18 +29,22 @@ Prérequis :
 - Node.js 22.13 ou plus récent (ou 24.3+) ;
 - l'app **Expo Go** à jour sur ton téléphone. Expo Go ne fait tourner qu'**une seule version d'Expo** à la fois (actuellement le SDK 58), et le projet est réglé dessus.
 
+Vérifie d'abord `node -v` : si c'est en dessous de 22.13, installe la version LTS depuis [nodejs.org](https://nodejs.org) (ou `winget install OpenJS.NodeJS.LTS` sur Windows), puis **ferme et rouvre** le terminal.
+
 ```bash
 cd mobile
-rm -rf node_modules package-lock.json   # repartir propre après un essai raté
-npx expo install expo@^58.0.0 --fix     # installe le SDK 58 et aligne toutes les dépendances
-npx expo-doctor@latest                  # vérifie qu'il ne reste rien d'incompatible
-cp .env.example .env                    # puis remplir les 3 valeurs (voir ci-dessous)
+npm install                      # installe Expo (SDK 58) et les dépendances
+npx expo install --fix           # aligne toutes les versions sur le SDK 58
+npx expo-doctor@latest           # vérifie qu'il ne reste rien d'incompatible
+cp .env.example .env             # puis remplir les 3 valeurs (voir ci-dessous)
 npx expo start
 ```
 
+Après un essai raté, repars propre en supprimant `node_modules` et `package-lock.json` avant `npm install`.
+
 Scanne le QR code affiché avec l'appareil photo (iPhone) ou avec Expo Go (Android).
 
-Quand Expo Go passera à une version plus récente, relance la même commande avec le nouveau numéro (`expo@^59.0.0`, etc.).
+Quand Expo Go passera à une version plus récente : `npm install expo@^59.0.0` (nouveau numéro), puis `npx expo install --fix`.
 
 ### Fichier `.env`
 
