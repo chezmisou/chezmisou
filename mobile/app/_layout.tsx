@@ -18,6 +18,8 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 const headerOptions = {
   headerStyle: { backgroundColor: colors.blancCreme },
   headerShadowVisible: false,
+  // iOS 26+ : en-tête opaque, sinon le contenu passe dessous (Liquid Glass)
+  headerTransparent: false,
   headerTintColor: colors.marronProfond,
   headerTitleStyle: { fontFamily: fonts.serif, fontSize: 18, color: colors.marronProfond },
   headerBackTitle: "Retour",
