@@ -44,11 +44,11 @@ Scanne le QR code affiché avec l'appareil photo (iPhone) ou avec Expo Go (Andro
 
 Quand Expo Go passera à une version plus récente, relance la même commande avec le nouveau numéro (`expo@^59.0.0`, etc.).
 
-### Pas de fichier `.env` à créer
+### Fichier `.env` (déjà inclus)
 
-L'app se connecte au site indiqué dans `app.json` (`expo.extra.apiUrl`), et récupère toute seule la configuration de connexion auprès de lui. Si l'adresse du site change, modifie `apiUrl`.
+Le fichier `mobile/.env` est dans le dépôt : il n'y a rien à copier. Il ne contient que des valeurs publiques (adresse du site, clé publique Supabase). **N'y mets jamais de clé secrète** (`service_role`, `sk_…`) : le dépôt est public.
 
-Pour tester l'app contre un aperçu Vercel, crée un `.env` avec `EXPO_PUBLIC_API_URL=<adresse de l'aperçu>` (voir `.env.example`).
+Si l'URL Supabase n'y est pas, l'app la récupère toute seule auprès du site (`/api/mobile/config`).
 
 ## Publier sur l'App Store et Google Play
 

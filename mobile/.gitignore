@@ -5,7 +5,7 @@ web-build/
 expo-env.d.ts
 ios/
 android/
-.env
+# .env est volontairement suivi : il ne contient que des valeurs publiques
 *.jks
 *.p8
 *.p12

@@ -7,7 +7,7 @@ import Constants from "expo-constants";
  */
 const fromAppJson = (Constants.expoConfig?.extra as { apiUrl?: string } | undefined)?.apiUrl;
 
-export const API_URL = (process.env.EXPO_PUBLIC_API_URL || fromAppJson || "https://chezmisou.vercel.app").replace(
+export const API_URL = (process.env.EXPO_PUBLIC_API_URL || fromAppJson || "https://chezmisou.com").replace(
   /\/$/,
   ""
 );
