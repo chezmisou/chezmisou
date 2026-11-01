@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { ArrowLeft, Banknote, Church, CreditCard, Loader2, Lock, MapPin, Truck } from "lucide-react";
 import Link from "next/link";
 import { useLacCart } from "@/lib/cart/LacCartContext";
@@ -100,24 +100,33 @@ export default function CheckoutLacPage() {
       .catch(() => setChoice((prev) => prev ?? "pickup"));
   }, []);
 
-  // Autocomplétion de l'adresse
-  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  // Autocomplétion de l'adresse.
+  // Les résultats sont rangés avec la saisie qui les a produits : on n'affiche
+  // que ceux de la saisie actuelle (pas de setState synchrone dans l'effet).
+  const [suggest, setSuggest] = useState<{ q: string; results: AddressSuggestion[] }>({
+    q: "",
+    results: [],
+  });
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const skipSuggestFor = useRef<string | null>(null);
+  // Adresse choisie dans la liste : on ne repropose pas de suggestions pour elle
+  const [pickedLine1, setPickedLine1] = useState<string | null>(null);
+
+  const addressQuery = form.line1.trim();
+  const wantsSuggestions =
+    deliveryMethod === "local_delivery" &&
+    addressQuery.length >= 4 &&
+    pickedLine1 !== form.line1;
 
   useEffect(() => {
-    if (deliveryMethod !== "local_delivery") return;
-    const q = form.line1.trim();
-    if (q.length < 4 || skipSuggestFor.current === form.line1) {
-      setSuggestions([]);
-      return;
-    }
+    if (!wantsSuggestions) return;
     const ctrl = new AbortController();
     const t = setTimeout(() => {
-      fetch(`/api/lac/address-search?q=${encodeURIComponent(q)}`, { signal: ctrl.signal })
+      fetch(`/api/lac/address-search?q=${encodeURIComponent(addressQuery)}`, {
+        signal: ctrl.signal,
+      })
         .then((r) => (r.ok ? r.json() : { results: [] }))
         .then((data) => {
-          setSuggestions(data.results ?? []);
+          setSuggest({ q: addressQuery, results: data.results ?? [] });
           setShowSuggestions(true);
         })
         .catch(() => {});
@@ -126,10 +135,13 @@ export default function CheckoutLacPage() {
       clearTimeout(t);
       ctrl.abort();
     };
-  }, [form.line1, deliveryMethod]);
+  }, [addressQuery, wantsSuggestions]);
+
+  const suggestions =
+    wantsSuggestions && suggest.q === addressQuery ? suggest.results : [];
 
   function pickSuggestion(s: AddressSuggestion) {
-    skipSuggestFor.current = s.line1;
+    setPickedLine1(s.line1);
     setForm((prev) => ({ ...prev, line1: s.line1, postalCode: s.postalCode, city: s.city }));
     setErrors((prev) => {
       const next = { ...prev };
@@ -138,45 +150,58 @@ export default function CheckoutLacPage() {
       delete next.city;
       return next;
     });
-    setSuggestions([]);
     setShowSuggestions(false);
   }
 
-  // Prix de livraison calculé selon la distance, dès que l'adresse est complète
-  const [quote, setQuote] = useState<DeliveryQuote>({ status: "idle" });
+  // Prix de livraison calculé selon la distance, dès que l'adresse est complète.
+  // Même principe : le résultat est lié à l'adresse qui l'a produit.
+  const quoteLine1 = form.line1.trim();
+  const quotePostalCode = form.postalCode.trim();
+  const quoteCity = form.city.trim();
+  const addressComplete =
+    deliveryMethod === "local_delivery" &&
+    !!quoteLine1 &&
+    /^\d{5}$/.test(quotePostalCode) &&
+    !!quoteCity;
+  const quoteKey = `${quoteLine1}|${quotePostalCode}|${quoteCity}`;
+
+  const [quoteResult, setQuoteResult] = useState<{
+    key: string;
+    quote: DeliveryQuote;
+  } | null>(null);
 
   useEffect(() => {
-    if (deliveryMethod !== "local_delivery") return;
-    const line1 = form.line1.trim();
-    const postalCode = form.postalCode.trim();
-    const city = form.city.trim();
-    if (!line1 || !/^\d{5}$/.test(postalCode) || !city) {
-      setQuote({ status: "idle" });
-      return;
-    }
-    setQuote({ status: "loading" });
+    if (!addressComplete) return;
     const ctrl = new AbortController();
     const t = setTimeout(() => {
       fetch("/api/lac/delivery-quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ line1, postalCode, city }),
+        body: JSON.stringify({
+          line1: quoteLine1,
+          postalCode: quotePostalCode,
+          city: quoteCity,
+        }),
         signal: ctrl.signal,
       })
         .then((r) => r.json())
         .then((data) => {
-          if (data?.ok) {
-            setQuote({ status: "ok", fee: data.fee, distanceKm: data.distanceKm });
-          } else {
-            setQuote({
-              status: "error",
-              error: data?.error || "Impossible de calculer la livraison",
-            });
-          }
+          setQuoteResult({
+            key: quoteKey,
+            quote: data?.ok
+              ? { status: "ok", fee: data.fee, distanceKm: data.distanceKm }
+              : {
+                  status: "error",
+                  error: data?.error || "Impossible de calculer la livraison",
+                },
+          });
         })
         .catch((err) => {
           if (err?.name !== "AbortError") {
-            setQuote({ status: "error", error: "Impossible de calculer la livraison" });
+            setQuoteResult({
+              key: quoteKey,
+              quote: { status: "error", error: "Impossible de calculer la livraison" },
+            });
           }
         });
     }, 600);
@@ -184,7 +209,13 @@ export default function CheckoutLacPage() {
       clearTimeout(t);
       ctrl.abort();
     };
-  }, [form.line1, form.postalCode, form.city, deliveryMethod]);
+  }, [addressComplete, quoteKey, quoteLine1, quotePostalCode, quoteCity]);
+
+  const quote: DeliveryQuote = !addressComplete
+    ? { status: "idle" }
+    : quoteResult?.key === quoteKey
+      ? quoteResult.quote
+      : { status: "loading" };
 
   const minDeliveryFee = tiers.length ? Math.min(...tiers.map((t) => t.price)) : null;
   const deliveryFee = quote.status === "ok" ? quote.fee : null;
@@ -613,10 +644,7 @@ export default function CheckoutLacPage() {
                     <input
                       type="text"
                       value={form.line1}
-                      onChange={(e) => {
-                        skipSuggestFor.current = null;
-                        updateField("line1", e.target.value);
-                      }}
+                      onChange={(e) => updateField("line1", e.target.value)}
                       onFocus={() => setShowSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                       className={inputClass("line1")}
