@@ -5,6 +5,7 @@ import { LacCartProvider } from "@/lib/cart/LacCartContext";
 import { TraiteurSelectionProvider } from "@/lib/traiteur/TraiteurSelectionContext";
 import CartDrawer from "@/components/public/CartDrawer";
 import LacCartDrawer from "@/components/public/LacCartDrawer";
+import FeedbackButton from "@/components/public/FeedbackButton";
 import { isTraiteurEnabled } from "@/lib/settings";
 
 export default async function PublicLayout({
@@ -23,6 +24,7 @@ export default async function PublicLayout({
           <Footer traiteurEnabled={traiteurEnabled} />
           <CartDrawer />
           <LacCartDrawer />
+          <FeedbackButton />
         </TraiteurSelectionProvider>
       </LacCartProvider>
     </CartProvider>

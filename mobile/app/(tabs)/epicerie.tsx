@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { EmptyState, ErrorBox, Loading, Muted, Screen, styles as ui } from "@/components/ui";
 import { useApi } from "@/lib/useApi";
 import { useCart } from "@/context/CartContext";
+import { FeedbackHeaderButton } from "@/components/FeedbackHeaderButton";
 import { absoluteUrl } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
 import type { Catalog } from "@/lib/types";
@@ -16,7 +17,7 @@ function CartButton() {
     <Pressable
       onPress={() => router.push("/panier")}
       accessibilityLabel={`Panier, ${epicerieCount} article${epicerieCount > 1 ? "s" : ""}`}
-      style={{ paddingHorizontal: space.lg }}
+      style={{ paddingLeft: space.xs, paddingRight: space.lg }}
     >
       <Ionicons name="bag-handle-outline" size={24} color={colors.marronProfond} />
       {epicerieCount > 0 ? (
@@ -48,7 +49,16 @@ export default function EpicerieScreen() {
 
   return (
     <>
-      <Tabs.Screen options={{ headerRight: () => <CartButton /> }} />
+      <Tabs.Screen
+        options={{
+          headerRight: () => (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <FeedbackHeaderButton />
+              <CartButton />
+            </View>
+          ),
+        }}
+      />
       {loading ? (
         <Loading />
       ) : (

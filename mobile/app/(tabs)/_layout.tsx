@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { FeedbackHeaderButton } from "@/components/FeedbackHeaderButton";
 import { colors, fonts } from "@/lib/theme";
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -31,6 +32,7 @@ export default function TabsLayout() {
         headerShadowVisible: false,
         headerTransparent: false,
         headerTitleStyle: { fontFamily: fonts.serif, fontSize: 20, color: colors.marronProfond },
+        headerRight: () => <FeedbackHeaderButton />,
         tabBarActiveTintColor: colors.orange,
         tabBarInactiveTintColor: colors.grisChaud,
         tabBarStyle: {

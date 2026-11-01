@@ -12,6 +12,7 @@ import { DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } from "@expo-googl
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { colors, fonts } from "@/lib/theme";
+import { FeedbackHeaderButton } from "@/components/FeedbackHeaderButton";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -24,7 +25,9 @@ const headerOptions = {
   headerTitleStyle: { fontFamily: fonts.serif, fontSize: 18, color: colors.marronProfond },
   headerBackTitle: "Retour",
   contentStyle: { backgroundColor: colors.blancCreme },
-} as const;
+  // « Un retour ? » accessible depuis chaque écran
+  headerRight: () => <FeedbackHeaderButton />,
+};
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -55,6 +58,7 @@ export default function RootLayout() {
             <Stack.Screen name="checkout/lac" options={{ title: "Commande LAC" }} />
             <Stack.Screen name="confirmation" options={{ title: "Merci !", headerBackVisible: false, gestureEnabled: false }} />
             <Stack.Screen name="devis" options={{ title: "Demande de devis" }} />
+            <Stack.Screen name="retour" options={{ title: "Un retour ?", presentation: "modal", headerRight: () => null }} />
             <Stack.Screen name="admin/commandes" options={{ title: "Commandes" }} />
             <Stack.Screen name="admin/commande/[id]" options={{ title: "Commande" }} />
             <Stack.Screen name="admin/lac/index" options={{ title: "Menus LAC" }} />
