@@ -85,7 +85,9 @@ export default function CgvPage() {
         <p className="text-text-body leading-relaxed">
           Le Client valide sa commande en ligne apr&egrave;s avoir accept&eacute; les pr&eacute;sentes
           CGV. Le paiement s&rsquo;effectue par carte bancaire via Stripe, prestataire
-          de paiement s&eacute;curis&eacute;. Pour les prestations traiteur, un devis
+          de paiement s&eacute;curis&eacute;. Pour les commandes LAC (Lunch After Church), le
+          Client peut aussi choisir de r&eacute;gler en esp&egrave;ces lors du retrait ou de la
+          livraison ; la commande est alors ferme d&egrave;s sa validation en ligne. Pour les prestations traiteur, un devis
           personnalis&eacute; est envoy&eacute; au Client apr&egrave;s &eacute;tude de sa demande ; les
           modalit&eacute;s de paiement sont pr&eacute;cis&eacute;es dans le devis.
         </p>

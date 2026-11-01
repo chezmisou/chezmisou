@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, type FormEvent } from "react";
-import { ArrowLeft, Loader2, Lock, MapPin, Truck } from "lucide-react";
+import { ArrowLeft, Banknote, CreditCard, Loader2, Lock, MapPin, Truck } from "lucide-react";
 import Link from "next/link";
 import { useLacCart } from "@/lib/cart/LacCartContext";
 import PromoCodeInput from "@/components/public/PromoCodeInput";
@@ -40,6 +40,7 @@ export default function CheckoutLacPage() {
   const [deliveryMethod, setDeliveryMethod] = useState<
     "pickup" | "local_delivery"
   >("pickup");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
   const [menuInfo, setMenuInfo] = useState<MenuInfo | null>(null);
   const [deadlinePassed, setDeadlinePassed] = useState(false);
   const [loading, setLoading] = useState(!!(currentMenuId && items.length > 0));
@@ -208,6 +209,7 @@ export default function CheckoutLacPage() {
             : null,
         instructions: form.instructions,
         notes: form.notes,
+        paymentMethod,
         ...(appliedPromo ? { promoCodeId: appliedPromo.promoCodeId } : {}),
       };
 
@@ -502,6 +504,64 @@ export default function CheckoutLacPage() {
               </div>
             )}
 
+            {/* Payment Method */}
+            <div className="bg-blanc rounded-2xl p-6 shadow-sm border border-marron-profond/5">
+              <h2 className="font-serif text-xl text-marron-profond mb-5">
+                Mode de paiement
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("cash")}
+                  aria-pressed={paymentMethod === "cash"}
+                  className={`relative flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all text-center ${
+                    paymentMethod === "cash"
+                      ? "border-orange bg-orange/5"
+                      : "border-marron-profond/10 hover:border-marron-profond/30"
+                  }`}
+                >
+                  <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-green-600 text-blanc text-[11px] font-semibold font-sans">
+                    Recommandé
+                  </span>
+                  <Banknote
+                    size={28}
+                    className={
+                      paymentMethod === "cash" ? "text-orange" : "text-gris-chaud"
+                    }
+                  />
+                  <span className="font-sans font-semibold text-marron-profond">
+                    En espèces
+                  </span>
+                  <span className="font-sans text-xs text-text-body">
+                    Vous payez {deliveryMethod === "pickup" ? "au retrait" : "au livreur"} dimanche. L&rsquo;appoint est apprécié.
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("card")}
+                  aria-pressed={paymentMethod === "card"}
+                  className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all text-center ${
+                    paymentMethod === "card"
+                      ? "border-orange bg-orange/5"
+                      : "border-marron-profond/10 hover:border-marron-profond/30"
+                  }`}
+                >
+                  <CreditCard
+                    size={28}
+                    className={
+                      paymentMethod === "card" ? "text-orange" : "text-gris-chaud"
+                    }
+                  />
+                  <span className="font-sans font-semibold text-marron-profond">
+                    Carte bancaire
+                  </span>
+                  <span className="font-sans text-xs text-text-body">
+                    Paiement en ligne sécurisé par Stripe, dès maintenant.
+                  </span>
+                </button>
+              </div>
+            </div>
+
             {/* Notes */}
             <div className="bg-blanc rounded-2xl p-6 shadow-sm border border-marron-profond/5">
               <h2 className="font-serif text-xl text-marron-profond mb-5">
@@ -525,12 +585,14 @@ export default function CheckoutLacPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 size={20} className="animate-spin" />
-                  Redirection vers le paiement…
+                  {paymentMethod === "cash" ? "Validation de la commande…" : "Redirection vers le paiement…"}
                 </>
               ) : (
                 <>
-                  <Lock size={18} />
-                  Payer {priceFormatter.format(total)}
+                  {paymentMethod === "cash" ? <Banknote size={18} /> : <Lock size={18} />}
+                  {paymentMethod === "cash"
+                    ? `Commander · ${priceFormatter.format(total)} en espèces`
+                    : `Payer ${priceFormatter.format(total)}`}
                 </>
               )}
             </button>
@@ -636,18 +698,22 @@ export default function CheckoutLacPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 size={20} className="animate-spin" />
-                    Redirection vers le paiement…
+                    {paymentMethod === "cash" ? "Validation de la commande…" : "Redirection vers le paiement…"}
                   </>
                 ) : (
                   <>
-                    <Lock size={18} />
-                    Payer {priceFormatter.format(total)}
+                    {paymentMethod === "cash" ? <Banknote size={18} /> : <Lock size={18} />}
+                    {paymentMethod === "cash"
+                      ? `Commander · ${priceFormatter.format(total)} en espèces`
+                      : `Payer ${priceFormatter.format(total)}`}
                   </>
                 )}
               </button>
 
               <p className="text-xs text-gris-chaud text-center mt-4 font-sans">
-                Paiement sécurisé par Stripe
+                {paymentMethod === "cash"
+                  ? "Aucun paiement maintenant · réglez en espèces dimanche"
+                  : "Paiement sécurisé par Stripe"}
               </p>
             </div>
           </div>

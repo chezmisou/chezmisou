@@ -5,8 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { resend, RESEND_FROM } from "@/lib/resend";
 import { render } from "@react-email/render";
 import { OrderConfirmationEpicerie } from "@/lib/emails/order-confirmation-epicerie";
-import { OrderConfirmationLac } from "@/lib/emails/order-confirmation-lac";
-import { AdminNewOrder } from "@/lib/emails/admin-new-order";
+import { createLacOrder } from "@/lib/orders/lac";
+import { sendAdminNotification } from "@/lib/orders/admin-notification";
 import { getNumberSetting, SETTING_KEYS } from "@/lib/settings";
 import type Stripe from "stripe";
 
@@ -280,7 +280,14 @@ async function handleEpicerieOrder(
     subtotalEuros,
     shippingEuros,
     totalEuros,
-    addressMeta: metadata,
+    orderLabel: "épicerie",
+    address: {
+      line1: metadata.address_line1 || "",
+      line2: metadata.address_line2 || undefined,
+      postalCode: metadata.address_postal_code || "",
+      city: metadata.address_city || "",
+      country: metadata.address_country || "FR",
+    },
     subject: `Nouvelle commande épicerie #${orderNumber}`,
   });
 
@@ -293,7 +300,6 @@ async function handleLacOrder(
   session: Stripe.Checkout.Session,
   metadata: Record<string, string>
 ) {
-  // Parse items from metadata
   let items: { lacDishId: string; quantity: number }[];
   try {
     items = JSON.parse(metadata.items_json || "[]");
@@ -313,271 +319,38 @@ async function handleLacOrder(
     return;
   }
 
-  // Re-fetch dishes from DB
-  const dishIds = items.map((i) => i.lacDishId);
-  const dishes = await prisma.lacDish.findMany({
-    where: { id: { in: dishIds }, lacMenuId },
-  });
-  const dishMap = new Map(dishes.map((d) => [d.id, d]));
-
-  // Fetch menu for date info
-  const menu = await prisma.lacMenu.findUnique({
-    where: { id: lacMenuId },
-  });
-
-  // Upsert CustomerProfile
-  const email =
-    session.customer_email || `${metadata.customer_first_name}@unknown.com`;
-  const firstName = metadata.customer_first_name || "";
-  const lastName = metadata.customer_last_name || "";
-  const phone = metadata.customer_phone || "";
-
-  const customer = await prisma.customerProfile.upsert({
-    where: { email },
-    create: { email, firstName, lastName, phone: phone || null },
-    update: { firstName, lastName, phone: phone || null },
-  });
-  console.log("[webhook] LAC Customer profile:", customer.id);
-
-  // Create Address if delivery
   const deliveryMethod = metadata.delivery_method as
     | "pickup"
     | "local_delivery";
-  let address: { id: string } | null = null;
 
-  if (deliveryMethod === "local_delivery" && metadata.address_line1) {
-    address = await prisma.address.create({
-      data: {
-        customerProfileId: customer.id,
-        line1: metadata.address_line1,
-        line2: metadata.address_line2 || null,
-        postalCode: metadata.address_postal_code || "",
-        city: metadata.address_city || "",
-        country: "FR",
-      },
-    });
-    console.log("[webhook] LAC Address:", address.id);
-  }
-
-  // Calculate totals from DB prices
-  const subtotalCents = items.reduce((sum, item) => {
-    const dish = dishMap.get(item.lacDishId);
-    if (!dish) return sum;
-    return sum + Math.round(Number(dish.price) * 100) * item.quantity;
-  }, 0);
-
-  const lacDeliveryFee = await getNumberSetting(
-    SETTING_KEYS.LAC_DELIVERY_FEE.key,
-    SETTING_KEYS.LAC_DELIVERY_FEE.default
-  );
-  const shippingCents = deliveryMethod === "local_delivery" ? Math.round(lacDeliveryFee * 100) : 0;
-
-  // Discount from promo code
-  const lacPromoCodeId = metadata.promo_code_id || null;
-  const lacDiscountEuros = lacPromoCodeId ? parseFloat(metadata.discount_amount || "0") : 0;
-  const lacDiscountCents = Math.round(lacDiscountEuros * 100);
-
-  const totalCents = subtotalCents + shippingCents - lacDiscountCents;
-
-  const subtotalEuros = subtotalCents / 100;
-  const shippingEuros = shippingCents / 100;
-  const totalEuros = totalCents / 100;
-
-  // Build order items
-  const orderItems = items
-    .map((item) => {
-      const dish = dishMap.get(item.lacDishId);
-      if (!dish) return null;
-      return {
-        itemType: "lac_dish",
-        itemId: dish.id,
-        itemNameSnapshot: dish.name,
-        itemPriceSnapshot: Number(dish.price),
-        quantity: item.quantity,
-      };
-    })
-    .filter((x): x is NonNullable<typeof x> => x !== null);
-
-  // Create Order
-  const orderNumber = `LAC-${Date.now().toString(36).toUpperCase()}`;
-
-  const order = await prisma.order.create({
-    data: {
-      orderNumber,
-      type: "lac",
-      lacMenuId,
-      customerProfileId: customer.id,
-      guestEmail: email,
-      status: "paid",
-      subtotal: subtotalEuros,
-      shippingCost: shippingEuros,
-      discountAmount: lacDiscountEuros,
-      total: totalEuros,
-      promoCodeId: lacPromoCodeId || null,
-      paymentProvider: "stripe",
-      paymentStatus: "paid",
-      stripeSessionId: session.id,
-      deliveryMethod,
-      shippingAddressId: address?.id || null,
-      notes: metadata.notes || null,
-      items: {
-        create: orderItems,
-      },
+  await createLacOrder({
+    lacMenuId,
+    items,
+    deliveryMethod,
+    customer: {
+      email:
+        session.customer_email || `${metadata.customer_first_name}@unknown.com`,
+      firstName: metadata.customer_first_name || "",
+      lastName: metadata.customer_last_name || "",
+      phone: metadata.customer_phone || "",
     },
-  });
-  console.log("[webhook] LAC Order created:", order.id, orderNumber);
-
-  // Create PromoCodeRedemption and increment usedCount
-  if (lacPromoCodeId && lacDiscountEuros > 0) {
-    await prisma.promoCodeRedemption.create({
-      data: {
-        promoCodeId: lacPromoCodeId,
-        orderId: order.id,
-        customerProfileId: customer.id,
-        guestEmail: email,
-        discountAmount: lacDiscountEuros,
-      },
-    });
-    await prisma.promoCode.update({
-      where: { id: lacPromoCodeId },
-      data: { usedCount: { increment: 1 } },
-    });
-    console.log("[webhook] LAC PromoCodeRedemption created for:", lacPromoCodeId);
-  }
-
-  // Send confirmation email to customer
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://chezmisou.com";
-  const serviceDateStr = menu
-    ? menu.serviceDate.toLocaleDateString("fr-FR", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : "";
-
-  const emailItems = orderItems.map((oi) => ({
-    name: oi.itemNameSnapshot,
-    quantity: oi.quantity,
-    unitPrice: oi.itemPriceSnapshot,
-    total: oi.itemPriceSnapshot * oi.quantity,
-  }));
-
-  try {
-    const customerHtml = await render(
-      OrderConfirmationLac({
-        firstName,
-        orderNumber,
-        serviceDate: serviceDateStr,
-        deliveryMethod,
-        items: emailItems,
-        subtotal: subtotalEuros,
-        shippingCost: shippingEuros,
-        total: totalEuros,
-        address:
-          deliveryMethod === "local_delivery"
-            ? {
-                line1: metadata.address_line1 || "",
-                line2: metadata.address_line2 || undefined,
-                postalCode: metadata.address_postal_code || "",
-                city: metadata.address_city || "",
-              }
-            : undefined,
-        deliveryInstructions: metadata.delivery_instructions || undefined,
-        appUrl,
-      })
-    );
-
-    await resend.emails.send({
-      from: RESEND_FROM,
-      to: email,
-      subject: `Chez Misou — Confirmation commande LAC #${orderNumber}`,
-      html: customerHtml,
-    });
-    console.log("[webhook] LAC Confirmation email sent to:", email);
-  } catch (err) {
-    console.error("[webhook] Failed to send LAC customer email:", err);
-  }
-
-  // Send admin notification
-  await sendAdminNotification({
-    orderNumber,
-    orderId: order.id,
-    customerName: `${firstName} ${lastName}`,
-    customerEmail: email,
-    emailItems,
-    subtotalEuros,
-    shippingEuros,
-    totalEuros,
-    addressMeta: metadata,
-    subject: `Nouvelle commande LAC #${orderNumber} — ${serviceDateStr}`,
+    address:
+      deliveryMethod === "local_delivery" && metadata.address_line1
+        ? {
+            line1: metadata.address_line1,
+            line2: metadata.address_line2 || undefined,
+            postalCode: metadata.address_postal_code || "",
+            city: metadata.address_city || "",
+          }
+        : null,
+    instructions: metadata.delivery_instructions || undefined,
+    notes: metadata.notes || undefined,
+    promoCodeId: metadata.promo_code_id || null,
+    discountEuros: metadata.promo_code_id
+      ? parseFloat(metadata.discount_amount || "0")
+      : 0,
+    payment: { method: "card", stripeSessionId: session.id },
   });
 
   console.log("[webhook] Done processing LAC session:", session.id);
-}
-
-// ─── Shared admin notification helper ─────────────────────────────────────────
-
-async function sendAdminNotification({
-  orderNumber,
-  orderId,
-  customerName,
-  customerEmail,
-  emailItems,
-  subtotalEuros,
-  shippingEuros,
-  totalEuros,
-  addressMeta,
-  subject,
-}: {
-  orderNumber: string;
-  orderId: string;
-  customerName: string;
-  customerEmail: string;
-  emailItems: { name: string; quantity: number; total: number }[];
-  subtotalEuros: number;
-  shippingEuros: number;
-  totalEuros: number;
-  addressMeta: Record<string, string>;
-  subject: string;
-}) {
-  const adminEmails = process.env.ADMIN_EMAILS?.split(",")
-    .map((e) => e.trim())
-    .filter(Boolean);
-  if (!adminEmails?.length) return;
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://chezmisou.com";
-
-  try {
-    const adminHtml = await render(
-      AdminNewOrder({
-        orderNumber,
-        orderId,
-        customerName,
-        customerEmail,
-        items: emailItems,
-        subtotal: subtotalEuros,
-        shippingCost: shippingEuros,
-        total: totalEuros,
-        address: {
-          line1: addressMeta.address_line1 || "",
-          line2: addressMeta.address_line2 || undefined,
-          postalCode: addressMeta.address_postal_code || "",
-          city: addressMeta.address_city || "",
-          country: addressMeta.address_country || "FR",
-        },
-        appUrl,
-      })
-    );
-
-    await resend.emails.send({
-      from: RESEND_FROM,
-      to: adminEmails,
-      subject,
-      html: adminHtml,
-    });
-    console.log("[webhook] Admin notification sent to:", adminEmails);
-  } catch (err) {
-    console.error("[webhook] Failed to send admin email:", err);
-  }
 }

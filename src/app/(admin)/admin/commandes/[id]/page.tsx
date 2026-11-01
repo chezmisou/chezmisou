@@ -177,13 +177,29 @@ export default async function AdminCommandeDetailPage({
           <div className="flex justify-between">
             <span className="text-gris-chaud">Fournisseur</span>
             <span className="text-marron-profond">
-              {order.paymentProvider || "Stripe"}
+              {order.paymentProvider === "cash"
+                ? "Espèces (à la remise)"
+                : "Stripe (carte)"}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gris-chaud">Statut</span>
-            <span className="text-marron-profond capitalize">
-              {order.paymentStatus}
+            <span
+              className={`font-medium ${
+                order.paymentStatus === "paid"
+                  ? "text-green-700"
+                  : "text-orange"
+              }`}
+            >
+              {{
+                pending:
+                  order.paymentProvider === "cash"
+                    ? "À encaisser"
+                    : "En attente",
+                paid: "Payé",
+                failed: "Échoué",
+                refunded: "Remboursé",
+              }[order.paymentStatus] ?? order.paymentStatus}
             </span>
           </div>
           {order.stripeSessionId && (
@@ -214,6 +230,12 @@ export default async function AdminCommandeDetailPage({
         <h2 className="font-serif text-lg font-bold text-marron-profond mb-4">
           Changer le statut
         </h2>
+        {order.paymentProvider === "cash" && order.paymentStatus !== "paid" && (
+          <p className="text-sm text-orange mb-3">
+            Paiement en espèces à encaisser. Passez la commande en « Payée » ou
+            « Livrée » une fois l&apos;argent reçu.
+          </p>
+        )}
         <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
       </div>
     </div>

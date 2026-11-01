@@ -36,10 +36,25 @@ export async function PATCH(
       return NextResponse.json({ error: "Statut invalide" }, { status: 400 });
     }
 
+    // Paiement en espèces : l'argent est encaissé à la remise, donc passer la
+    // commande en « Payée » ou « Livrée » marque aussi le paiement comme reçu.
+    const existing = await prisma.order.findUnique({
+      where: { id },
+      select: { paymentProvider: true, paymentStatus: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Commande introuvable" }, { status: 404 });
+    }
+    const markCashPaid =
+      existing.paymentProvider === "cash" &&
+      existing.paymentStatus !== "paid" &&
+      (status === "paid" || status === "delivered");
+
     const order = await prisma.order.update({
       where: { id },
       data: {
         status: status as OrderStatus,
+        ...(markCashPaid ? { paymentStatus: "paid" as const } : {}),
       },
       include: {
         customer: true,

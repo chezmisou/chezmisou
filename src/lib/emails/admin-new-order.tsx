@@ -19,6 +19,7 @@ interface OrderItem {
 interface AdminNewOrderProps {
   orderNumber: string;
   orderId: string;
+  orderLabel?: string;
   customerName: string;
   customerEmail: string;
   items: OrderItem[];
@@ -32,12 +33,14 @@ interface AdminNewOrderProps {
     city: string;
     country: string;
   };
+  paymentNote?: string;
   appUrl: string;
 }
 
 export function AdminNewOrder({
   orderNumber,
   orderId,
+  orderLabel = "épicerie",
   customerName,
   customerEmail,
   items,
@@ -45,6 +48,7 @@ export function AdminNewOrder({
   shippingCost,
   total,
   address,
+  paymentNote,
   appUrl,
 }: AdminNewOrderProps) {
   return (
@@ -54,8 +58,23 @@ export function AdminNewOrder({
         <Container style={container}>
           <Section style={content}>
             <Text style={title}>
-              Nouvelle commande épicerie : #{orderNumber}
+              Nouvelle commande {orderLabel} : #{orderNumber}
             </Text>
+
+            {paymentNote && (
+              <Text
+                style={{
+                  ...paragraph,
+                  backgroundColor: "#FFF3D6",
+                  border: "1px solid #E8B84B",
+                  borderRadius: "6px",
+                  padding: "12px 16px",
+                  fontWeight: "bold",
+                }}
+              >
+                {paymentNote}
+              </Text>
+            )}
 
             <Hr style={divider} />
 
@@ -126,18 +145,24 @@ export function AdminNewOrder({
 
             <Hr style={divider} />
 
-            <Text style={sectionTitle}>Adresse de livraison</Text>
-            <Text style={paragraph}>
-              {address.line1}
-              {address.line2 ? (
-                <>
+            {address.line1 ? (
+              <>
+                <Text style={sectionTitle}>Adresse de livraison</Text>
+                <Text style={paragraph}>
+                  {address.line1}
+                  {address.line2 ? (
+                    <>
+                      <br />
+                      {address.line2}
+                    </>
+                  ) : null}
                   <br />
-                  {address.line2}
-                </>
-              ) : null}
-              <br />
-              {address.postalCode} {address.city}, {address.country}
-            </Text>
+                  {address.postalCode} {address.city}, {address.country}
+                </Text>
+              </>
+            ) : (
+              <Text style={sectionTitle}>Retrait sur place</Text>
+            )}
 
             <Hr style={divider} />
 
