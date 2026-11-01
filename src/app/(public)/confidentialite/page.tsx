@@ -139,8 +139,27 @@ export default function ConfidentialitePage() {
           Les donn&eacute;es de commande sont conserv&eacute;es pendant 10 ans conform&eacute;ment aux
           obligations comptables. Les donn&eacute;es des demandes de devis non
           concr&eacute;tis&eacute;es sont supprim&eacute;es apr&egrave;s 3 ans. Les donn&eacute;es de compte client
-          restent actives tant que le compte existe ; elles sont supprim&eacute;es sur
-          demande.
+          restent actives tant que le compte existe ; vous pouvez supprimer votre
+          compte &agrave; tout moment depuis l&rsquo;application mobile (Compte &rsaquo; Supprimer mon
+          compte) ou sur la page{" "}
+          <a href="/suppression-compte" className="text-orange underline">
+            chezmisou.com/suppression-compte
+          </a>
+          .
+        </p>
+      </section>
+
+      <section>
+        <h2 className="text-xl font-serif text-marron mt-8 mb-4">
+          Application mobile
+        </h2>
+        <p className="text-text-body leading-relaxed">
+          L&rsquo;application Chez Misou (iPhone et Android) traite les m&ecirc;mes donn&eacute;es que le
+          site, pour les m&ecirc;mes finalit&eacute;s : email, nom, t&eacute;l&eacute;phone et adresse pour passer et
+          suivre vos commandes. Elle n&rsquo;utilise ni publicit&eacute;, ni pistage, ni localisation.
+          L&rsquo;acc&egrave;s aux photos n&rsquo;est demand&eacute; qu&rsquo;&agrave; l&rsquo;administratrice, pour illustrer les plats.
+          Les paiements par carte sont trait&eacute;s par Stripe ; l&rsquo;application ne conserve aucune
+          donn&eacute;e bancaire.
         </p>
       </section>
 

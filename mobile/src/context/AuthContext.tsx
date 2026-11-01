@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
+import * as AppleAuthentication from "expo-apple-authentication";
+import * as Crypto from "expo-crypto";
 import type { Session } from "@supabase/supabase-js";
 import { getSupabase } from "@/lib/supabase";
 import { api } from "@/lib/api";
@@ -14,7 +16,11 @@ interface AuthState {
   signUp: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>;
   /** Connexion ou création de compte avec Google. false si l'utilisateur a annulé. */
   signInWithGoogle: () => Promise<boolean>;
+  /** Connexion avec Apple (iPhone). false si l'utilisateur a annulé. */
+  signInWithApple: () => Promise<boolean>;
   signOut: () => Promise<void>;
+  /** Supprime définitivement le compte (exigé par l'App Store et Google Play). */
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -127,13 +133,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  async function signInWithApple(): Promise<boolean> {
+    const client = await getSupabase();
+    // Nonce : Apple reçoit l'empreinte, Supabase vérifie avec la valeur d'origine
+    const rawNonce = Crypto.randomUUID();
+    const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, rawNonce);
+    let credential: AppleAuthentication.AppleAuthenticationCredential;
+    try {
+      credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce,
+      });
+    } catch (e) {
+      if ((e as { code?: string })?.code === "ERR_REQUEST_CANCELED") return false;
+      throw new Error("Connexion Apple impossible pour le moment.");
+    }
+    if (!credential.identityToken) throw new Error("Apple n'a pas renvoyé d'identifiant. Réessayez.");
+
+    const { error } = await client.auth.signInWithIdToken({
+      provider: "apple",
+      token: credential.identityToken,
+      nonce: rawNonce,
+    });
+    if (error) throw new Error("La connexion Apple n'a pas abouti. Réessayez.");
+
+    // Apple ne donne le nom qu'à la première connexion : on le garde sur le compte
+    const given = credential.fullName?.givenName;
+    const family = credential.fullName?.familyName;
+    if (given || family) {
+      await client.auth
+        .updateUser({ data: { first_name: given ?? undefined, last_name: family ?? undefined } })
+        .catch(() => {});
+    }
+    return true;
+  }
+
+  async function deleteAccount() {
+    await api("/api/account/delete", { method: "POST" });
+    const client = await getSupabase();
+    await client.auth.signOut({ scope: "local" }).catch(() => {});
+  }
+
   async function signOut() {
     const client = await getSupabase();
     await client.auth.signOut();
   }
 
   return (
-    <AuthContext.Provider value={{ session, email, isAdmin, ready, signIn, signUp, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{
+        session,
+        email,
+        isAdmin,
+        ready,
+        signIn,
+        signUp,
+        signInWithGoogle,
+        signInWithApple,
+        signOut,
+        deleteAccount,
+      }}>
       {children}
     </AuthContext.Provider>
   );

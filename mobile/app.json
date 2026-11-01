@@ -9,14 +9,27 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.chezmisou.app"
+      "bundleIdentifier": "com.chezmisou.app",
+      "buildNumber": "1",
+      "usesAppleSignIn": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.chezmisou.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#FFF8EE"
-      }
+      },
+      "versionCode": 1,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -26,7 +39,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Chez Misou utilise vos photos pour illustrer les plats du menu."
+          "photosPermission": "Chez Misou utilise vos photos pour illustrer les plats du menu.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ],
       [
@@ -37,13 +52,15 @@
           "resizeMode": "contain",
           "backgroundColor": "#FFF8EE"
         }
-      ]
+      ],
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": false
     },
     "extra": {
       "apiUrl": "https://chezmisou.com"
-    }
+    },
+    "description": "Commandez la cuisine haïtienne de Misou : Lunch After Church, épicerie fine et traiteur."
   }
 }
