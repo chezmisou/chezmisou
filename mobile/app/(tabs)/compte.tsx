@@ -5,7 +5,6 @@ import { Body, Button, Card, EmptyState, ErrorBox, Field, Loading, Muted, Screen
 import { OrderCard } from "@/components/OrderCard";
 import { useAuth } from "@/context/AuthContext";
 import { useApi } from "@/lib/useApi";
-import { supabaseConfigured } from "@/lib/supabase";
 import type { Order } from "@/lib/types";
 import { colors, space } from "@/lib/theme";
 
@@ -123,9 +122,6 @@ export default function CompteScreen() {
   if (session) return <MyOrders />;
   return (
     <Screen>
-      {!supabaseConfigured ? (
-        <ErrorBox message="Connexion indisponible : configuration Supabase manquante (voir mobile/README.md)." />
-      ) : null}
       <AuthForm />
     </Screen>
   );

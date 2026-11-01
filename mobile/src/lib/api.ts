@@ -1,7 +1,7 @@
-import { supabase } from "./supabase";
+import { getAccessToken } from "./supabase";
+import { API_URL } from "./config";
 
-/** Adresse du site Chez Misou : toutes les données passent par ses API. */
-export const API_URL = (process.env.EXPO_PUBLIC_API_URL || "https://chezmisou.com").replace(/\/$/, "");
+export { API_URL };
 
 export class ApiError extends Error {
   status: number;
@@ -23,8 +23,7 @@ export async function api<T>(
   if (options.body !== undefined) headers["Content-Type"] = "application/json";
 
   if (options.auth !== false) {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
+    const token = await getAccessToken();
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
@@ -61,8 +60,7 @@ export function absoluteUrl(url: string): string {
 
 /** Envoie une photo (admin) et renvoie son URL publique. */
 export async function uploadImage(path: string, uri: string, mimeType?: string | null): Promise<string> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+  const token = await getAccessToken();
   const name = uri.split("/").pop() || "photo.jpg";
   const form = new FormData();
   form.append("file", { uri, name, type: mimeType || "image/jpeg" } as unknown as Blob);

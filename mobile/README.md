@@ -25,6 +25,8 @@ Les produits, les codes promo et les plats traiteur se gèrent toujours sur le s
 
 ## Lancer l'app sur ton téléphone
 
+Plutôt que de retélécharger le dossier à chaque fois, clone-le une fois (`git clone https://github.com/chezmisou/chezmisou`) puis récupère les nouveautés avec `git pull` : `node_modules` est conservé, et seul `npm install` est à relancer si les dépendances changent.
+
 Prérequis :
 - Node.js 22.13 ou plus récent (ou 24.3+) ;
 - l'app **Expo Go** à jour sur ton téléphone. Expo Go ne fait tourner qu'**une seule version d'Expo** à la fois (actuellement le SDK 58), et le projet est réglé dessus.
@@ -42,15 +44,11 @@ Scanne le QR code affiché avec l'appareil photo (iPhone) ou avec Expo Go (Andro
 
 Quand Expo Go passera à une version plus récente, relance la même commande avec le nouveau numéro (`expo@^59.0.0`, etc.).
 
-### Fichier `.env`
+### Pas de fichier `.env` à créer
 
-| Variable | Valeur |
-|---|---|
-| `EXPO_PUBLIC_API_URL` | Adresse du site, ex. `https://chezmisou.com`. Pour tester une branche, mets l'URL d'aperçu Vercel. |
-| `EXPO_PUBLIC_SUPABASE_URL` | La même valeur que `NEXT_PUBLIC_SUPABASE_URL` du site |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | La même valeur que `NEXT_PUBLIC_SUPABASE_ANON_KEY` du site |
+L'app se connecte au site indiqué dans `app.json` (`expo.extra.apiUrl`), et récupère toute seule la configuration de connexion auprès de lui. Si l'adresse du site change, modifie `apiUrl`.
 
-Ces valeurs sont publiques (le site les envoie déjà au navigateur) : aucun secret ne va dans l'app.
+Pour tester l'app contre un aperçu Vercel, crée un `.env` avec `EXPO_PUBLIC_API_URL=<adresse de l'aperçu>` (voir `.env.example`).
 
 ## Publier sur l'App Store et Google Play
 

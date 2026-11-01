@@ -1,6 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
 import { AppState } from "react-native";
+import { API_URL } from "./config";
 
 /**
  * Stockage de la session dans le trousseau du téléphone.
@@ -40,22 +41,68 @@ const secureStorage = {
   },
 };
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
-const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
+let clientPromise: Promise<SupabaseClient> | null = null;
 
-export const supabaseConfigured = Boolean(url && anonKey);
+async function loadConfig(): Promise<{ url: string; anonKey: string }> {
+  // Un .env reste possible, mais n'est plus nécessaire : le site fournit la config.
+  const envUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const envKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+  if (envUrl && envKey) return { url: envUrl, anonKey: envKey };
 
-export const supabase = createClient(url || "https://placeholder.supabase.co", anonKey || "placeholder", {
-  auth: {
-    storage: secureStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+  const cacheKey = "chezmisou.supabase-config";
+  try {
+    const res = await fetch(`${API_URL}/api/mobile/config`);
+    const json = (await res.json()) as { supabaseUrl?: string; supabaseAnonKey?: string };
+    if (json.supabaseUrl && json.supabaseAnonKey) {
+      await SecureStore.setItemAsync(cacheKey, JSON.stringify(json)).catch(() => {});
+      return { url: json.supabaseUrl, anonKey: json.supabaseAnonKey };
+    }
+  } catch {
+    // hors connexion : on reprend la dernière config connue
+  }
+  const cached = await SecureStore.getItemAsync(cacheKey).catch(() => null);
+  if (cached) {
+    const json = JSON.parse(cached) as { supabaseUrl: string; supabaseAnonKey: string };
+    return { url: json.supabaseUrl, anonKey: json.supabaseAnonKey };
+  }
+  throw new Error("Connexion au site impossible. Vérifiez votre réseau et réessayez.");
+}
 
-// Rafraîchit le jeton seulement quand l'app est au premier plan
-AppState.addEventListener("change", (state) => {
-  if (state === "active") supabase.auth.startAutoRefresh();
-  else supabase.auth.stopAutoRefresh();
-});
+/** Client Supabase (connexion), créé une seule fois avec la config du site. */
+export function getSupabase(): Promise<SupabaseClient> {
+  if (!clientPromise) {
+    clientPromise = loadConfig()
+      .then(({ url, anonKey }) => {
+        const client = createClient(url, anonKey, {
+          auth: {
+            storage: secureStorage,
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: false,
+          },
+        });
+        // Rafraîchit le jeton seulement quand l'app est au premier plan
+        AppState.addEventListener("change", (state) => {
+          if (state === "active") client.auth.startAutoRefresh();
+          else client.auth.stopAutoRefresh();
+        });
+        return client;
+      })
+      .catch((err) => {
+        clientPromise = null; // on réessaiera au prochain appel
+        throw err;
+      });
+  }
+  return clientPromise;
+}
+
+/** Jeton de session courant, ou null (non connecté / config indisponible). */
+export async function getAccessToken(): Promise<string | null> {
+  try {
+    const client = await getSupabase();
+    const { data } = await client.auth.getSession();
+    return data.session?.access_token ?? null;
+  } catch {
+    return null;
+  }
+}

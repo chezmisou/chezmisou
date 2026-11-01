@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { api } from "@/lib/api";
 
 interface AuthState {
@@ -31,12 +31,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setReady(true);
-    });
-    const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
-    return () => data.subscription.unsubscribe();
+    let unsubscribe: (() => void) | null = null;
+    let cancelled = false;
+    getSupabase()
+      .then(async (client) => {
+        const { data } = await client.auth.getSession();
+        if (cancelled) return;
+        setSession(data.session);
+        const sub = client.auth.onAuthStateChange((_event, s) => setSession(s));
+        unsubscribe = () => sub.data.subscription.unsubscribe();
+      })
+      .catch(() => {})
+      .finally(() => !cancelled && setReady(true));
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   const email = session?.user.email ?? null;
@@ -59,18 +69,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [email]);
 
   async function signIn(mail: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({ email: mail.trim(), password });
+    const client = await getSupabase();
+    const { error } = await client.auth.signInWithPassword({ email: mail.trim(), password });
     if (error) throw new Error(translateAuthError(error.message));
   }
 
   async function signUp(mail: string, password: string) {
-    const { data, error } = await supabase.auth.signUp({ email: mail.trim(), password });
+    const client = await getSupabase();
+    const { data, error } = await client.auth.signUp({ email: mail.trim(), password });
     if (error) throw new Error(translateAuthError(error.message));
     return { needsConfirmation: !data.session };
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    const client = await getSupabase();
+    await client.auth.signOut();
   }
 
   return (
