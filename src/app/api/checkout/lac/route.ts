@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe-server";
 import { prisma } from "@/lib/prisma";
 import { getNumberSetting, SETTING_KEYS } from "@/lib/settings";
+import { activeLacOrderWhere, createLacOrder } from "@/lib/orders/lac";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,6 +31,7 @@ interface CheckoutBody {
   instructions?: string;
   notes?: string;
   promoCodeId?: string;
+  paymentMethod?: "cash" | "card";
 }
 
 function formatDateFr(date: Date): string {
@@ -45,6 +47,23 @@ export async function POST(req: NextRequest) {
   try {
     const body: CheckoutBody = await req.json();
     const { lacMenuId, items, deliveryMethod, customer, address, instructions, notes, promoCodeId } = body;
+    const paymentMethod = body.paymentMethod === "card" ? "card" : "cash";
+
+    if (deliveryMethod !== "pickup" && deliveryMethod !== "local_delivery") {
+      return NextResponse.json(
+        { error: "Mode de récupération invalide" },
+        { status: 400 }
+      );
+    }
+    if (
+      !Array.isArray(items) ||
+      items.some((i) => !Number.isInteger(i?.quantity) || i.quantity < 1)
+    ) {
+      return NextResponse.json(
+        { error: "Quantités invalides" },
+        { status: 400 }
+      );
+    }
 
     // --- Validation ---
     if (!lacMenuId) {
@@ -110,14 +129,14 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       const dish = dishMap.get(item.lacDishId)!;
       if (dish.maxQuantity != null) {
-        // Count existing paid orders for this dish
+        // Count existing orders for this dish (paid by card, or cash not cancelled)
         const paidQuantity = await prisma.orderItem.aggregate({
           where: {
             itemType: "lac_dish",
             itemId: dish.id,
             order: {
               lacMenuId: menu.id,
-              paymentStatus: "paid",
+              ...activeLacOrderWhere,
             },
           },
           _sum: { quantity: true },
@@ -217,6 +236,26 @@ export async function POST(req: NextRequest) {
       validatedPromoCode = { id: promo.id, code: promo.code };
     }
 
+    // --- Paiement en espèces : commande créée directement, sans Stripe ---
+    if (paymentMethod === "cash") {
+      const { orderNumber } = await createLacOrder({
+        lacMenuId,
+        items: items.map((i) => ({ lacDishId: i.lacDishId, quantity: i.quantity })),
+        deliveryMethod,
+        customer,
+        address: deliveryMethod === "local_delivery" ? address : null,
+        instructions,
+        notes,
+        promoCodeId: validatedPromoCode?.id ?? null,
+        discountEuros: discountAmountCents / 100,
+        payment: { method: "cash" },
+      });
+
+      return NextResponse.json({
+        url: `/checkout/lac/success?order=${encodeURIComponent(orderNumber)}&paiement=especes`,
+      });
+    }
+
     // --- Shipping options ---
     const shippingOptions =
       deliveryMethod === "local_delivery"
@@ -294,7 +333,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[checkout/lac] Erreur:", err);
     return NextResponse.json(
-      { error: "Une erreur est survenue lors de la création du paiement" },
+      { error: "Une erreur est survenue lors de la validation de la commande" },
       { status: 500 }
     );
   }

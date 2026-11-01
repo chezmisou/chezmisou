@@ -23,9 +23,11 @@ interface OrderConfirmationLacProps {
   orderNumber: string;
   serviceDate: string;
   deliveryMethod: "pickup" | "local_delivery";
+  paymentMethod?: "cash" | "card";
   items: OrderItem[];
   subtotal: number;
   shippingCost: number;
+  discount?: number;
   total: number;
   address?: {
     line1: string;
@@ -42,9 +44,11 @@ export function OrderConfirmationLac({
   orderNumber,
   serviceDate,
   deliveryMethod,
+  paymentMethod = "card",
   items,
   subtotal,
   shippingCost,
+  discount = 0,
   total,
   address,
   deliveryInstructions,
@@ -75,6 +79,16 @@ export function OrderConfirmationLac({
             <Text style={orderRef}>
               Commande N° <strong>{orderNumber}</strong>
             </Text>
+
+            {paymentMethod === "cash" && (
+              <Text style={cashBlock}>
+                <strong>Paiement en espèces</strong>
+                <br />
+                Merci de prévoir <strong>{total.toFixed(2)}&nbsp;€</strong> à
+                régler {deliveryMethod === "pickup" ? "au retrait" : "au livreur"}{" "}
+                dimanche. L&rsquo;appoint est très apprécié&nbsp;!
+              </Text>
+            )}
 
             <Hr style={divider} />
 
@@ -153,8 +167,18 @@ export function OrderConfirmationLac({
                       : `${shippingCost.toFixed(2)} €`}
                   </td>
                 </tr>
+                {discount > 0 && (
+                  <tr>
+                    <td style={totalLabel}>Remise</td>
+                    <td style={totalValue}>
+                      &ndash;{discount.toFixed(2)}&nbsp;€
+                    </td>
+                  </tr>
+                )}
                 <tr>
-                  <td style={totalLabelBold}>Total</td>
+                  <td style={totalLabelBold}>
+                    {paymentMethod === "cash" ? "À régler en espèces" : "Total"}
+                  </td>
                   <td style={totalValueBold}>
                     {total.toFixed(2)}&nbsp;€
                   </td>
@@ -226,6 +250,16 @@ const addressBlock = {
   padding: "12px 16px",
   borderRadius: "6px",
   border: "1px solid #E8DFD5",
+};
+
+const cashBlock = {
+  fontSize: "15px",
+  lineHeight: "1.6",
+  color: "#3B2314",
+  backgroundColor: "#FFF3D6",
+  padding: "12px 16px",
+  borderRadius: "6px",
+  border: "1px solid #E8B84B",
 };
 
 const sectionTitle = {

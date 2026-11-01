@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { PartyPopper } from "lucide-react";
+import { Banknote, PartyPopper } from "lucide-react";
 import Link from "next/link";
 import { useLacCart } from "@/lib/cart/LacCartContext";
 
@@ -10,17 +10,20 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
+  const orderNumber = searchParams.get("order");
+  const isCash = searchParams.get("paiement") === "especes" && !!orderNumber;
+  const confirmed = !!sessionId || isCash;
   const { clearCart } = useLacCart();
 
   useEffect(() => {
-    if (!sessionId) {
+    if (!confirmed) {
       router.replace("/");
       return;
     }
     clearCart();
-  }, [sessionId, clearCart, router]);
+  }, [confirmed, clearCart, router]);
 
-  if (!sessionId) return null;
+  if (!confirmed) return null;
 
   return (
     <section className="flex flex-col items-center justify-center min-h-[70vh] px-6 text-center">
@@ -37,6 +40,17 @@ function SuccessContent() {
           Rendez-vous dimanche pour un repas qui vous ramènera au pays.
           Un email de confirmation vient de vous être envoyé.
         </p>
+
+        {isCash && (
+          <div className="flex items-start gap-3 text-left p-4 mb-8 rounded-xl bg-orange/5 border border-orange/30 font-sans">
+            <Banknote size={22} className="text-orange shrink-0 mt-0.5" />
+            <p className="text-sm text-text-body">
+              Commande <strong>{orderNumber}</strong> · paiement en espèces.
+              Pensez à prévoir le montant exact dimanche, l&rsquo;appoint est
+              très apprécié.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link

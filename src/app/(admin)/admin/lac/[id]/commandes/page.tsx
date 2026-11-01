@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import PrintButton from "@/components/admin/PrintButton";
+import { activeLacOrderWhere } from "@/lib/orders/lac";
 
 function formatCurrency(value: unknown): string {
   return new Intl.NumberFormat("fr-FR", {
@@ -32,7 +33,7 @@ export default async function LacMenuCommandesPage({
   }
 
   const orders = await prisma.order.findMany({
-    where: { type: "lac", lacMenuId: id, paymentStatus: "paid" },
+    where: { type: "lac", lacMenuId: id, ...activeLacOrderWhere },
     include: {
       items: true,
       customer: true,
@@ -89,7 +90,7 @@ export default async function LacMenuCommandesPage({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-blanc rounded-2xl p-6 shadow-sm border border-marron-doux/20 print:shadow-none print:border print:p-4">
           <p className="text-gris-chaud uppercase tracking-widest text-xs mb-2">
-            Commandes payées
+            Commandes
           </p>
           <p className="font-serif text-4xl font-bold text-marron-profond print:text-2xl">
             {orders.length}
@@ -176,6 +177,19 @@ export default async function LacMenuCommandesPage({
                     >
                       <td className="py-2 pr-4 text-marron-profond font-medium">
                         {name}
+                        {order.paymentProvider === "cash" && (
+                          <span
+                            className={`block text-xs font-semibold ${
+                              order.paymentStatus === "paid"
+                                ? "text-green-700"
+                                : "text-orange"
+                            }`}
+                          >
+                            {order.paymentStatus === "paid"
+                              ? "Espèces · encaissé"
+                              : `Espèces · ${formatCurrency(order.total)} à encaisser`}
+                          </span>
+                        )}
                       </td>
                       <td className="py-2 pr-4 text-text-body">{phone}</td>
                       <td className="py-2 pr-4 text-text-body">
@@ -243,6 +257,19 @@ export default async function LacMenuCommandesPage({
                     >
                       <td className="py-2 pr-4 text-marron-profond font-medium">
                         {name}
+                        {order.paymentProvider === "cash" && (
+                          <span
+                            className={`block text-xs font-semibold ${
+                              order.paymentStatus === "paid"
+                                ? "text-green-700"
+                                : "text-orange"
+                            }`}
+                          >
+                            {order.paymentStatus === "paid"
+                              ? "Espèces · encaissé"
+                              : `Espèces · ${formatCurrency(order.total)} à encaisser`}
+                          </span>
+                        )}
                       </td>
                       <td className="py-2 pr-4 text-text-body text-xs">
                         {addr}

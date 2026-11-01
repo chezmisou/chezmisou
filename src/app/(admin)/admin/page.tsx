@@ -1,3 +1,4 @@
+import { activeLacOrderWhere } from "@/lib/orders/lac";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
@@ -72,7 +73,7 @@ export default async function AdminDashboard() {
 
   const lacOrderCount = upcomingLacMenu
     ? await prisma.order.count({
-        where: { type: "lac", lacMenuId: upcomingLacMenu.id, paymentStatus: "paid" },
+        where: { type: "lac", lacMenuId: upcomingLacMenu.id, ...activeLacOrderWhere },
       })
     : 0;
 
