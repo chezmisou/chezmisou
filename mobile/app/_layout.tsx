@@ -48,6 +48,7 @@ export default function RootLayout() {
           <StatusBar style="dark" />
           <Stack screenOptions={headerOptions}>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
             <Stack.Screen name="produit/[slug]" options={{ title: "" }} />
             <Stack.Screen name="panier" options={{ title: "Mon panier" }} />
             <Stack.Screen name="checkout/epicerie" options={{ title: "Commande épicerie" }} />

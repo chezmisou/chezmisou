@@ -9,7 +9,21 @@ import type { Order } from "@/lib/types";
 import { colors, space } from "@/lib/theme";
 
 function AuthForm() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  async function google() {
+    setError(null);
+    setInfo(null);
+    setGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Connexion Google impossible");
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,6 +64,19 @@ function AuthForm() {
           <Body style={{ color: colors.success }}>{info}</Body>
         </View>
       ) : null}
+      <Button
+        label="Continuer avec Google"
+        icon="logo-google"
+        variant="secondary"
+        onPress={google}
+        loading={googleLoading}
+        disabled={loading}
+      />
+      <View style={{ flexDirection: "row", alignItems: "center", gap: space.md, marginVertical: space.lg }}>
+        <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+        <Muted>ou avec votre email</Muted>
+        <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+      </View>
       <Field
         label="Email"
         value={email}
@@ -68,7 +95,12 @@ function AuthForm() {
         textContentType={mode === "login" ? "password" : "newPassword"}
         onSubmitEditing={submit}
       />
-      <Button label={mode === "login" ? "Se connecter" : "Créer mon compte"} onPress={submit} loading={loading} />
+      <Button
+        label={mode === "login" ? "Se connecter" : "Créer mon compte"}
+        onPress={submit}
+        loading={loading}
+        disabled={googleLoading}
+      />
       <Button
         label={mode === "login" ? "Pas encore de compte ? S’inscrire" : "Déjà un compte ? Se connecter"}
         variant="ghost"
