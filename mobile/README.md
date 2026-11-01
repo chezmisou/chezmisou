@@ -60,17 +60,36 @@ L'app utilise la connexion Google déjà active sur le site (Supabase). Une seul
 
 Sans ça, Google renvoie vers le site au lieu de revenir dans l'app.
 
+### Connexion avec Apple (iPhone)
+
+L'App Store impose « Se connecter avec Apple » dès qu'une app propose Google. Dans Supabase › **Authentication › Sign In / Providers › Apple** : active Apple et mets dans **Client IDs** `com.chezmisou.app,host.exp.Exponent` (le second sert aux tests dans Expo Go). Pas besoin de clé secrète pour l'app.
+
 ## Publier sur l'App Store et Google Play
 
-1. Crée un compte sur [expo.dev](https://expo.dev), puis lance `npm install -g eas-cli` et `eas login`.
-2. Lance `eas build:configure`, puis `eas build --platform all`. Expo construit l'app dans le cloud, sans Mac.
-3. Lance `eas submit --platform ios` et `eas submit --platform android`.
+Comptes nécessaires : Apple Developer (99 $/an) et Google Play Console (25 $ une fois), plus un compte gratuit sur [expo.dev](https://expo.dev).
 
-Pour publier, il te faut :
-- un compte Apple Developer (99 $/an) ;
-- un compte Google Play Console (25 $, une seule fois).
+```bash
+cd mobile
+npm install -g eas-cli
+eas login
+eas init                                   # relie le projet à ton compte Expo (une fois)
+eas build --platform android --profile production
+eas build --platform ios --profile production
+eas submit --platform android --latest
+eas submit --platform ios --latest
+```
 
-Les identifiants de l'app sont `com.chezmisou.app` (iOS et Android), dans `app.json`.
+- Expo construit l'app dans le cloud (pas besoin de Mac) et gère les certificats Apple.
+- Les numéros de version de build augmentent tout seuls (`eas.json`).
+- Pour tester sur Android sans passer par le store : `eas build --platform android --profile preview` donne un fichier `.apk` à installer.
+
+Textes des fiches, questionnaires de confidentialité et notes pour Apple : voir [`store/FICHES.md`](store/FICHES.md).
+
+Déjà en place pour la validation :
+- suppression du compte dans l'app (Compte › Supprimer mon compte) et sur https://chezmisou.com/suppression-compte ;
+- connexion avec Apple sur iPhone ;
+- déclaration de chiffrement (HTTPS seulement) ;
+- aucune permission caméra ou micro, accès aux photos seulement pour l'admin.
 
 ## Bon à savoir
 

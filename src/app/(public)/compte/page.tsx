@@ -99,6 +99,13 @@ export default async function ComptePage() {
           Se déconnecter
         </button>
       </form>
+
+      <Link
+        href="/suppression-compte"
+        className="inline-block mt-6 text-xs text-gris-chaud hover:text-red-700 underline transition-colors"
+      >
+        Supprimer mon compte
+      </Link>
     </div>
   );
 }
