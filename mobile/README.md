@@ -54,6 +54,15 @@ Le fichier `mobile/.env` est dans le dépôt : il n'y a rien à copier. Il ne co
 
 Si l'URL Supabase n'y est pas, l'app la récupère toute seule auprès du site (`/api/mobile/config`).
 
+### Connexion avec Google
+
+L'app utilise la connexion Google déjà active sur le site (Supabase). Une seule chose à régler, une fois : dans Supabase › **Authentication › URL Configuration › Redirect URLs**, ajoute ces deux adresses, puis enregistre :
+
+- `chezmisou://**` (l'app publiée)
+- `exp://**` (l'app dans Expo Go, pendant les tests)
+
+Sans ça, Google renvoie vers le site au lieu de revenir dans l'app.
+
 ## Publier sur l'App Store et Google Play
 
 1. Crée un compte sur [expo.dev](https://expo.dev), puis lance `npm install -g eas-cli` et `eas login`.

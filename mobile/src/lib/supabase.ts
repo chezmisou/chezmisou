@@ -79,6 +79,8 @@ export function getSupabase(): Promise<SupabaseClient> {
             autoRefreshToken: true,
             persistSession: true,
             detectSessionInUrl: false,
+            // PKCE : la connexion Google renvoie un code échangé dans l'app
+            flowType: "pkce",
           },
         });
         // Rafraîchit le jeton seulement quand l'app est au premier plan
