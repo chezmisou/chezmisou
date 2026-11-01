@@ -38,7 +38,12 @@ export async function POST(req: NextRequest) {
     try {
       await handleCheckoutCompleted(session);
     } catch (err) {
+      // Renvoyer une erreur pour que Stripe réessaie automatiquement.
+      // Sans ça, un paiement encaissé pourrait ne jamais créer de commande.
+      // Les réessais sont sans danger : la commande existante est détectée
+      // via stripeSessionId et n'est pas créée deux fois.
       console.error("[webhook] handleCheckoutCompleted error:", err);
+      return new NextResponse("Webhook handler failed", { status: 500 });
     }
   }
 
