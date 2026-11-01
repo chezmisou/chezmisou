@@ -35,10 +35,7 @@ Vérifie d'abord `node -v` : si c'est en dessous de 22.13, installe la version L
 
 ```bash
 cd mobile
-npm install                      # installe Expo (SDK 58) et les dépendances
-npx expo install --fix           # aligne toutes les versions sur le SDK 58
-npx expo-doctor@latest           # vérifie qu'il ne reste rien d'incompatible
-cp .env.example .env             # puis remplir les 3 valeurs (voir ci-dessous)
+npm install                      # installe Expo SDK 58 et les bonnes versions
 npx expo start
 ```
 
