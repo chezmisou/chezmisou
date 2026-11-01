@@ -25,17 +25,22 @@ Les produits, les codes promo et les plats traiteur se gèrent toujours sur le s
 
 ## Lancer l'app sur ton téléphone
 
-Prérequis : Node.js 20 ou plus, et l'app **Expo Go** sur ton téléphone (App Store ou Google Play).
+Prérequis :
+- Node.js 22.13 ou plus récent (ou 24.3+) ;
+- l'app **Expo Go** à jour sur ton téléphone. Expo Go ne fait tourner qu'**une seule version d'Expo** à la fois (actuellement le SDK 58), et le projet est réglé dessus.
 
 ```bash
 cd mobile
-npm install
-npx expo install --fix   # aligne les versions sur le SDK Expo actuel
-cp .env.example .env     # puis remplir les 3 valeurs (voir ci-dessous)
+rm -rf node_modules package-lock.json   # repartir propre après un essai raté
+npx expo install expo@^58.0.0 --fix     # installe le SDK 58 et aligne toutes les dépendances
+npx expo-doctor@latest                  # vérifie qu'il ne reste rien d'incompatible
+cp .env.example .env                    # puis remplir les 3 valeurs (voir ci-dessous)
 npx expo start
 ```
 
 Scanne le QR code affiché avec l'appareil photo (iPhone) ou avec Expo Go (Android).
+
+Quand Expo Go passera à une version plus récente, relance la même commande avec le nouveau numéro (`expo@^59.0.0`, etc.).
 
 ### Fichier `.env`
 

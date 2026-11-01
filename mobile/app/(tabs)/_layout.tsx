@@ -13,6 +13,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.blancCreme },
         headerShadowVisible: false,
+        headerTransparent: false,
         headerTitleStyle: { fontFamily: fonts.serif, fontSize: 20, color: colors.marronProfond },
         tabBarActiveTintColor: colors.orange,
         tabBarInactiveTintColor: colors.grisChaud,
