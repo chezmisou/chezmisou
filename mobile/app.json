@@ -7,11 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFF8EE"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.chezmisou.app"
@@ -32,6 +27,15 @@
         "expo-image-picker",
         {
           "photosPermission": "Chez Misou utilise vos photos pour illustrer les plats du menu."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/logo.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFF8EE"
         }
       ]
     ],
