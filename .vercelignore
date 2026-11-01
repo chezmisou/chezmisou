@@ -1,1 +1,3 @@
-mobile
+# App mobile Expo (projet séparé). Le « / » limite à la racine :
+# sans lui, src/app/api/mobile (les API de l'app) serait aussi exclu.
+/mobile
