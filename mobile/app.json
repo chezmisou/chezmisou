@@ -41,6 +41,9 @@
     ],
     "experiments": {
       "typedRoutes": false
+    },
+    "extra": {
+      "apiUrl": "https://chezmisou.com"
     }
   }
 }
